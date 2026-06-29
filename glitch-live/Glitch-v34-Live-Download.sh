@@ -32,7 +32,7 @@ touch .ventoyignore
 clear
 echo "" 
 echo "" >> /tmp/wget-result
-echo "Glitch Linux v33 Sucessfully Downloaded!" >> /tmp/wget-result
+echo "Glitch Linux v34 Sucessfully Downloaded!" >> /tmp/wget-result
 echo "" >> /tmp/wget-result
 
 xterm -geometry 47x17 -e "cat /tmp/wget-result && sleep 120"
