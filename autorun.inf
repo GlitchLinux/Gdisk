@@ -1,0 +1,9 @@
+# ╔════════════════════════════════════╗
+# ║ Gdisk v2.0 - Multibooter Utiltity  ║
+# ║ rEFInd ~ agFM ~ iPXE ~ ISO booter  ║
+# ║ Gdiskchain ~ Vtoy ~ WinPe ~ Linux  ║
+# ╚════════════════════════════════════╝
+
+[Autorun]
+icon=Gdisk.ico
+label=Gdisk v2.0
