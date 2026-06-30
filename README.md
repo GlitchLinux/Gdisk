@@ -2,4 +2,8 @@
 
 <img width="1280" height="360" alt="FullLogo_NoBuffer" src="https://github.com/user-attachments/assets/1080118d-18ac-4d28-9399-16b29014b5d7" />
 
-# **G**<sup>RUB2</sup> **D**<sup>evice</sup> **I**<sup>mage</sup> **S**<sup>election</sup> **K**<sup>it</sup>
+# **G**<sup>rub</sup>
+# **D**<sup>evice</sup>
+# **I**<sup>mage</sup>
+# **S**<sup>election</sup>
+# **K**<sup>it</sup>
