@@ -11,7 +11,7 @@ d88P  Y88b 888  "Y88b  888  d88P  Y88b 888   d8P
 888    888 888    888  888        "888 888  Y88b   
 Y88b  d88P 888  .d88P  888  Y88b  d88P 888   Y88b  
  "Y8888P88 8888888P" 8888888 "Y8888P"  888    Y88b 
-    GRUB.     DEVICE.    IMAGE.    SELECTION.    KIT.                 
+   GRUB      DEVICE      IMAGE     SELECTION     KIT                
 ```                                 
                                                    
                                                    
