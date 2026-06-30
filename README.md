@@ -4,8 +4,10 @@
 
 #Grub2 #Device #Image #Selection #Kit
 
-# **G**RUB2
-# **D**evice
-# **I**mage
-# **S**election
-# **K**it
+<h1>
+<b style="font-size:1.4em;">G</b>rub2
+<b style="font-size:1.4em;">D</b>evice
+<b style="font-size:1.4em;">I</b>mage
+<b style="font-size:1.4em;">S</b>election
+<b style="font-size:1.4em;">K</b>it
+</h1>
