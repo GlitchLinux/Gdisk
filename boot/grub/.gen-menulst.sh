@@ -33,11 +33,11 @@ mkdir -p "$(dirname "$OUT_AGFM")"
 TMP="$(mktemp)"
 # ---- header ----
 cat > "$TMP" <<'HEADER'
-# ╔═══════════════════════════════════════╗
-# ║ Gdisk v2 - GRUB4DOS menu.lst (auto-generated) ║
-# ║ Disk-backed map - boots .iso .img >1GB                        ║
-# ║ Searches /Gdisk and /Gdisk/*/ (one level deep)                 ║
-# ╚═══════════════════════════════════════╝
+# ╔═══════════════════════════════════════════════════╗
+# ║ Gdisk v2 - GRUB4DOS menu.lst (auto-generated)     ║
+# ║ Disk-backed map - boots .iso .img >1GB            ║
+# ║ Searches /Gdisk and /Gdisk/*/ (one level deep)    ║
+# ╚═══════════════════════════════════════════════════╝
 timeout 30
 default 0
 color black/cyan yellow/cyan
