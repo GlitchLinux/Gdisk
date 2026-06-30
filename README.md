@@ -8,7 +8,7 @@
  dMP MMP"dMP dMP dMP  VMMMb  dMMMMK"   
 dMP.dMP dMP.aMP dMP dP .dMP dMP"AMF    
 VMMMP" dMMMMP" dMP  VMMMP" dMP dMP     
-Grub2 Device Image System toolKit                
+Grub2 Device Image System Kit                
 ```                                 
                                                    
                                                    
