@@ -1,2 +1,3 @@
+<img width="1280" height="360" alt="FullLogo_NoBuffer" src="https://github.com/user-attachments/assets/1080118d-18ac-4d28-9399-16b29014b5d7" />
 
-<img width="360" height="360" alt="Gdisk" src="https://github.com/user-attachments/assets/532330f2-eaae-4702-a935-33eab7fbdac5" /> # Gdisk - Portable Computing
+##Gdisk - Portable Computing
