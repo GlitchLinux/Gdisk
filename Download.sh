@@ -46,17 +46,17 @@ cd ..
 cd glitch-live
 sudo rm -f vmlinuz initrd.img filesystem.squashfs
 
-echo "Downloading Glitch-Linux Live v34 - initrd.img" | borderize
+echo "Downloading Glitch-Linux Live v35 - initrd.img" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/initrd.img"
 clear
-echo "Downloading Glitch-Linux Live v34 - vmlinuz" | borderize
+echo "Downloading Glitch-Linux Live v35 - vmlinuz" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/vmlinuz"
 clear
-echo "Downloading Glitch-Linux Live v34 - filesystem.squashfs" | borderize
+echo "Downloading Glitch-Linux Live v35 - filesystem.squashfs" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/filesystem.squashfs"
 
 echo "All Files Sucessfully Downloaded!" > /tmp/download-job
 echo "  Hit enter to finish script" >> /tmp/download-job
