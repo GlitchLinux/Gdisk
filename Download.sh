@@ -25,6 +25,10 @@ clear
 echo "Downloading WinPE Vtoy - MicroTech-11-WinPE" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/WinPE-Vtoy/MicroTech-11-WinPE.vtoy"
+clear
+echo "Downloading WinPE Vtoy - Tiny-11-WinPE" | borderize
+echo ""
+sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/winpe-vtoy/Tiny-11-WinPE.vtoy"
 
 cd ..
 cd bonsai-live
