@@ -10,21 +10,21 @@ echo "tree $PWD" > /tmp/path
 
 cat > "/tmp/.glitch-live.sh" << 'EOF'
 
-echo "Downloading Glitch-Linux Live v34 - initrd.img" | borderize
+echo "Downloading Glitch-Linux Live v35 - initrd.img" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/initrd.img"
 clear
-echo "Downloading Glitch-Linux Live v34 - vmlinuz" | borderize
+echo "Downloading Glitch-Linux Live v35 - vmlinuz" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/vmlinuz"
 clear
-echo "Downloading Glitch-Linux Live v34 - filesystem.squashfs" | borderize
+echo "Downloading Glitch-Linux Live v35 - filesystem.squashfs" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v34/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v35/live/filesystem.squashfs"
 
 echo " Downloaded Files: " | borderize > /tmp/wget-result
 echo "" >> /tmp/wget-result
-mv -f Glitch-v34-Live-Download.sh /tmp/
+mv -f Glitch-v35-Live-Download.sh /tmp/
 rm -f .ventoyignore
 bash /tmp/path >> /tmp/wget-result
 cp /tmp/Glitch-v33-Live-Download.sh .
@@ -32,7 +32,7 @@ touch .ventoyignore
 clear
 echo "" 
 echo "" >> /tmp/wget-result
-echo "Glitch Linux v34 Sucessfully Downloaded!" >> /tmp/wget-result
+echo "Glitch Linux v35 Sucessfully Downloaded!" >> /tmp/wget-result
 echo "" >> /tmp/wget-result
 
 xterm -geometry 47x17 -e "cat /tmp/wget-result && sleep 120"
