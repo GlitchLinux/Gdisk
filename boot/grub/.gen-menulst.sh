@@ -3,10 +3,9 @@
 #  gen-menulst.sh  -  Generate GRUB4DOS menu.lst for loadfm
 # --------------------------------------------------------------------
 #  GRUB4DOS menu.lst has no for-loops, so this scans the /Gdisk dir on
-#  a mounted Gdisk partition and emits one disk-backed map block per
-#  .iso/.img. Disk-backed map (no --mem) has NO 1GB size limit.
+#  a mounted Gdisk partition and emits one block per .iso/.img/.wim.
 #
-#  NOW ALSO SEARCHES ONE DIRECTORY LEVEL DEEPER for .iso/.img files.
+#  NOW ALSO SEARCHES ONE DIRECTORY LEVEL DEEPER for files.
 #
 #  Run it pointed at the MOUNTED Gdisk partition, e.g.:
 #     ./gen-menulst.sh /media/x/GDISK-V2
@@ -17,8 +16,9 @@
 #    2. Write menu.lst header (timeout/default/colors)
 #    3. For each .iso  -> map (0xff) CD-emulation block
 #    4. For each .img  -> map (hd32) HDD-emulation block
-#    5. Scan subdirs (/Gdisk/*/) for additional .iso/.img files
-#    6. Append Back entry; copy to expected loadfm location
+#    5. For each .wim  -> NTBOOT pe1= WIM boot block
+#    6. Scan subdirs (/Gdisk/*/) for additional files
+#    7. Append Back entry; copy to expected loadfm location
 # ====================================================================
 set -uo pipefail
 MNT="${1:-}"
@@ -34,8 +34,8 @@ TMP="$(mktemp)"
 # ---- header ----
 cat > "$TMP" <<'HEADER'
 # ╔═══════════════════════════════════════════════════╗
-# ║ Gdisk v2 - GRUB4DOS menu.lst (auto-generated)     ║
-# ║ Disk-backed map - boots .iso .img >1GB            ║
+# ║ Gdisk v3 - GRUB4DOS menu.lst (auto-generated)     ║
+# ║ Disk-backed map - boots .iso .img .wim >1GB       ║
 # ║ Searches /Gdisk and /Gdisk/*/ (one level deep)    ║
 # ╚═══════════════════════════════════════════════════╝
 timeout 30
@@ -44,19 +44,15 @@ color black/cyan yellow/cyan
 HEADER
 shopt -s nullglob
 # ---- ISO entries: CD emulation (0xff) ----
-# Search both $GDISK_DIR/*.iso and $GDISK_DIR/*/*.iso (one level deeper)
 for f in "$GDISK_DIR"/*.iso "$GDISK_DIR"/*.ISO "$GDISK_DIR"/*/*.iso "$GDISK_DIR"/*/*.ISO; do
     [ -f "$f" ] || continue
     base="$(basename "$f")"
     dir="$(basename "$(dirname "$f")")"
-    
-    # Build grub4dos path: if in subdir, include it; else just filename
     if [ "$dir" = "Gdisk" ]; then
         g4d="/Gdisk/$base"
     else
         g4d="/Gdisk/$dir/$base"
     fi
-    
     {
         echo "title  [ISO]  $dir/$base"
         echo "find --set-root $g4d"
@@ -68,19 +64,15 @@ for f in "$GDISK_DIR"/*.iso "$GDISK_DIR"/*.ISO "$GDISK_DIR"/*/*.iso "$GDISK_DIR"
     } >> "$TMP"
 done
 # ---- IMG entries: HDD emulation (hd32) ----
-# Search both $GDISK_DIR/*.img and $GDISK_DIR/*/*.img (one level deeper)
 for f in "$GDISK_DIR"/*.img "$GDISK_DIR"/*.IMG "$GDISK_DIR"/*/*.img "$GDISK_DIR"/*/*.IMG; do
     [ -f "$f" ] || continue
     base="$(basename "$f")"
     dir="$(basename "$(dirname "$f")")"
-    
-    # Build grub4dos path: if in subdir, include it; else just filename
     if [ "$dir" = "Gdisk" ]; then
         g4d="/Gdisk/$base"
     else
         g4d="/Gdisk/$dir/$base"
     fi
-    
     {
         echo "title  [IMG]  $dir/$base"
         echo "find --set-root $g4d"
@@ -89,6 +81,24 @@ for f in "$GDISK_DIR"/*.img "$GDISK_DIR"/*.IMG "$GDISK_DIR"/*/*.img "$GDISK_DIR"
         echo "chainloader (hd32)+1"
         echo "rootnoverify (hd32)"
         echo "boot"
+        echo
+    } >> "$TMP"
+done
+# ---- WIM entries: NTBOOT PE boot ----
+for f in "$GDISK_DIR"/*.wim "$GDISK_DIR"/*.WIM "$GDISK_DIR"/*/*.wim "$GDISK_DIR"/*/*.WIM; do
+    [ -f "$f" ] || continue
+    base="$(basename "$f")"
+    dir="$(basename "$(dirname "$f")")"
+    if [ "$dir" = "Gdisk" ]; then
+        g4d="/Gdisk/$base"
+    else
+        g4d="/Gdisk/$dir/$base"
+    fi
+    {
+        echo "title  [WIM]  $dir/$base"
+        echo "find --set-root $g4d"
+        echo "find --set-root /boot/grub/wimboot/initrd.img.xz"
+        echo "/NTBOOT pe1=$g4d"
         echo
     } >> "$TMP"
 done
@@ -101,8 +111,9 @@ cp -f "$TMP" "$OUT_AGFM"
 cp -f "$TMP" "$OUT_ROOT"
 rm -f "$TMP"
 # ---- summary ----
-n_iso=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.iso" \) -type f | wc -l)
-n_img=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.img" \) -type f | wc -l)
+n_iso=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.iso" \) -type f 2>/dev/null | wc -l)
+n_img=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.img" \) -type f 2>/dev/null | wc -l)
+n_wim=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.wim" \) -type f 2>/dev/null | wc -l)
 echo "[+] Wrote $OUT_AGFM"
 echo "[+] Wrote $OUT_ROOT"
-echo "[+] Entries: $n_iso ISO, $n_img IMG (scanned /Gdisk and /Gdisk/*/)"
+echo "[+] Entries: $n_iso ISO, $n_img IMG, $n_wim WIM (scanned /Gdisk and /Gdisk/*/)"
