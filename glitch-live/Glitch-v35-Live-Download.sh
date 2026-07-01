@@ -27,7 +27,7 @@ echo "" >> /tmp/wget-result
 mv -f Glitch-v35-Live-Download.sh /tmp/
 rm -f .ventoyignore
 bash /tmp/path >> /tmp/wget-result
-cp /tmp/Glitch-v33-Live-Download.sh .
+cp /tmp/Glitch-v35-Live-Download.sh .
 touch .ventoyignore
 clear
 echo "" 
