@@ -1,0 +1,11 @@
+iat_keyboard: at_keyboard
+imouse: efi_mouse
+ips2mouse: ps2mouse
+iserial: serial
+iserial_*: serial
+oaudio: morse
+ocbmemc: cbmemc
+ogfxterm: gfxterm
+oserial: serial
+oserial_*: serial
+ospkmodem: spkmodem
