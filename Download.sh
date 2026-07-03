@@ -31,22 +31,6 @@ echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/winpe-vtoy/Tiny-11-WinPE.vtoy"
 
 cd ..
-cd bonsai-live
-sudo rm -f vmlinuz initrd.img filesystem.squashfs
-
-echo "Downloading Bonsai Live v15 - initrd.img" | borderize
-echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Bonsai-Xfce-v15/live/initrd.img"
-clear
-echo "Downloading Bonsai Live v15 - vmlinuz" | borderize
-echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Bonsai-Xfce-v15/live/vmlinuz"
-clear
-echo "Downloading Bonsai Live v15 - filesystem.squashfs" | borderize
-echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Bonsai-Xfce-v15/live/filesystem.squashfs"
-
-cd ..
 cd glitch-live
 sudo rm -f vmlinuz initrd.img filesystem.squashfs
 
