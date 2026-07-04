@@ -2,8 +2,6 @@
 
 set PWD=pwd
 
-sudo rm -f .bootfiles-download.sh
-
 echo "cat /tmp/download-job | borderize ; read -p '  ' " > /tmp/finished 
 
 cat > "/tmp/.bootfiles-download.sh" << 'EOF'
@@ -59,6 +57,6 @@ sudo mv "/tmp/.bootfiles-download.sh" .
 
 xterm -geometry 60x5 -e 'sudo bash .bootfiles-download.sh' 2>&1 &
 
-sleep 0.5 && sudo mv -f Download.sh .Download.sh && sudo pkill xfce4-terminal
+sleep 0.5 && sudo pkill xfce4-terminal
 
 exit
