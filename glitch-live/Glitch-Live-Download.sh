@@ -10,29 +10,29 @@ echo "tree $PWD" > /tmp/path
 
 cat > "/tmp/.glitch-live.sh" << 'EOF'
 
-echo "Downloading Glitch-Linux Live v38 - initrd.img" | borderize
+echo "Downloading Glitch-Linux Live v39 - initrd.img" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/initrd.img"
 clear
-echo "Downloading Glitch-Linux Live v38 - vmlinuz" | borderize
+echo "Downloading Glitch-Linux Live v39 - vmlinuz" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/vmlinuz"
 clear
 echo "Downloading Glitch-Linux Live v38 - filesystem.squashfs" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/filesystem.squashfs"
 
 echo " Downloaded Files: " | borderize > /tmp/wget-result
 echo "" >> /tmp/wget-result
-mv -f Glitch-v38-Live-Download.sh /tmp/
+mv -f Glitch-Live-Download.sh /tmp/
 rm -f .ventoyignore
 bash /tmp/path >> /tmp/wget-result
-cp /tmp/Glitch-v38-Live-Download.sh .
+cp /tmp/Glitch-Live-Download.sh .
 touch .ventoyignore
 clear
 echo "" 
 echo "" >> /tmp/wget-result
-echo "Glitch Linux v38 Sucessfully Downloaded!" >> /tmp/wget-result
+echo "Glitch Linux Live Sucessfully Downloaded!" >> /tmp/wget-result
 echo "" >> /tmp/wget-result
 
 xterm -geometry 47x17 -e "cat /tmp/wget-result && sleep 120"
