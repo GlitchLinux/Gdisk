@@ -40,7 +40,7 @@ echo "Downloading Glitch-Linux Live v39 - vmlinuz" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/vmlinuz"
 clear
-echo "Downloading Glitch-Linux Live v38 - filesystem.squashfs" | borderize
+echo "Downloading Glitch-Linux Live v39 - filesystem.squashfs" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/filesystem.squashfs"
 
