@@ -32,17 +32,17 @@ cd ..
 cd glitch-live
 sudo rm -f vmlinuz initrd.img filesystem.squashfs
 
-echo "Downloading Glitch-Linux Live v38 - initrd.img" | borderize
+echo "Downloading Glitch-Linux Live v39 - initrd.img" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/initrd.img"
 clear
-echo "Downloading Glitch-Linux Live v38 - vmlinuz" | borderize
+echo "Downloading Glitch-Linux Live v39 - vmlinuz" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/vmlinuz"
 clear
 echo "Downloading Glitch-Linux Live v38 - filesystem.squashfs" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v38/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/filesystem.squashfs"
 
 echo "All Files Sucessfully Downloaded!" > /tmp/download-job
 echo "  Hit enter to finish script" >> /tmp/download-job
