@@ -20,9 +20,9 @@ echo "Downloading WinPE Vtoy - MiniWin-10-WinPE" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/WinPE-Vtoy/MiniWin-10-WinPE.vtoy"
 clear
-echo "Downloading WinPE Vtoy - 11-WinPE-mini-x64" | borderize
+echo "Downloading WinPE Vtoy - 11-WinPE-MINI-x64" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/winpe-vtoy/11-WinPE-mini-x64.vtoy"
+sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/winpe-vtoy/11-WinPE-MINI-x64.vtoy"
 
 cd ..
 cd glitch-live
