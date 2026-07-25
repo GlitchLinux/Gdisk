@@ -1,4 +1,5 @@
 @echo off
+title Gdisk WinPE Downloader
 color 0A
 mode con cols=80 lines=8
 cd ..
