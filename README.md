@@ -88,7 +88,9 @@ The installers are self-contained and also ship inside the device at
 - **Repair** - reinstall the MBR core.img and/or UEFI `BOOTX64.EFI`
 
 ```bash
-sudo ./gdisk-v3.sh
+git clone https://github.com/GlitchLinux/Gdisk.git
+cd Gdisk/boot/Gdisk-Installer/
+sudo ./gdisk-v3-installer.sh
 ```
 
 ### Windows / WinPE
