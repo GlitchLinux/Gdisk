@@ -1,5 +1,11 @@
 #!/bin/bash
 
+cd ..
+
+sudo mkdir -p glitch-live
+
+cd glitch-live
+
 sudo rm -f vmlinuz* filesystem.squashfs* initrd.img* wget-log
 
 sudo rm -f /tmp/.glitch-live.sh
@@ -35,7 +41,7 @@ echo "" >> /tmp/wget-result
 echo "Glitch Linux Live Sucessfully Downloaded!" >> /tmp/wget-result
 echo "" >> /tmp/wget-result
 
-xterm -geometry 47x17 -e "cat /tmp/wget-result && sleep 120"
+xterm -geometry 47x17 -e "cat /tmp/wget-result && sleep 20"
 
 EOF
 
