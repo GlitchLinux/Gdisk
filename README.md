@@ -123,8 +123,8 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
 
 | Image | Format | Description |
 |---|---|---|
-| [Gdisk-v3-Installer-iPXE-HYBRID.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-hybrid.iso) | Bootable ISO | Flash to target Disk, boots into Debian live, auto-launches `gdisk-v3.sh` |
-| [Gdisk-v3-Installer-iPXE-EFI.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | Flash to target Disk, boots into Debian live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-v3-Installer-iPXE-HYBRID.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-hybrid.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-v3-Installer-iPXE-EFI.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
 
 
 ---
