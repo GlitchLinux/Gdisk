@@ -54,8 +54,8 @@ Gdisk/
 │   │   ├── glitch-live.cfg   Glitch Linux live boot
 │   │   ├── agFM/  theme/  images/  wimboot/  vdiskchain/   supporting assets
 │   │   └── font.pf2  grubenv  system.cfg
-│   ├── Gdisk-Installer/      shipped installers: gdisk-v3.sh, gdisk-v3.exe, wget.exe
-│   └── Gdisk-Mkiso/          ISO-build scripts: gdisk-mkiso.sh, gdisk-hybrid-iso.sh
+│   ├── Gdisk-Installer/      shipped installers: gdisk-v3-installer.sh, gdisk-v3-installer.exe,
+│   └── Gdisk-Mkiso/          ISO-build scripts: gdisk-mkiso.sh
 ├── EFI/
 │   ├── BOOT/BOOTX64.EFI      patched grubfm UEFI boot binary
 │   ├── grubfm/               agFM loader (grubfmx64.efi)
