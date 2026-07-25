@@ -7,7 +7,8 @@ echo "cat /tmp/download-job | borderize ; read -p '  ' " > /tmp/finished
 cat > "/tmp/.bootfiles-download.sh" << 'EOF'
 
 cd Gdisk
-sudo rm -f *.vtoy
+sudo rm -f *.vtoy 
+sudo rm -f *.wim
 echo "Downloading WinPE Vtoy - EaseUS_Partition_Pro" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/WinPE-Vtoy/EaseUS_Partition_Pro.vtoy"
@@ -16,13 +17,10 @@ echo "Downloading WinPE Vtoy - Diskgenius-Pro-v6" | borderize
 echo ""
 sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/WinPE-Vtoy/Diskgenius-Pro-v6.vtoy"
 clear
-echo "Downloading WinPE Vtoy - MiniWin-10-WinPE" | borderize
+echo "Downloading WinPE Wim - NanoTech-11-x64-v1.8" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/WinPE-Vtoy/MiniWin-10-WinPE.vtoy"
-clear
-echo "Downloading WinPE Vtoy - 11-WinPE-MINI-x64" | borderize
-echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/winpe-vtoy/11-WinPE-MINI-x64.vtoy"
+sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/NanoTech-11-x64/NanoTech-11-x64-v1.8-25-July-2026.wim"
+sudo mv NanoTech-11-x64-v1.8-25-July-2026.wim NanoTech-11-x64-v1.8.wim
 
 cd ..
 cd glitch-live
