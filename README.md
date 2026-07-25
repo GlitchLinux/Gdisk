@@ -73,24 +73,17 @@ Gdisk/
 
 ## Installing Gdisk
 
-The installers are self-contained and also ship inside the device at
-`boot/Gdisk-Installer/`.
-
-## Installation Methods
-
 There are three ways to install Gdisk v3.0 onto a target USB drive or disk.
 
-### Method 1 - Linux Installer (gdisk-v3.sh)
+### Method 1 - Linux Installer (gdisk-v3-installer.sh)
+
+| Image | Format | Description |
+|---|---|---|
+| [gdisk-v3-installer.sh](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer.sh) | Linux Bash Script | Interactive CLI Installer |
 
 A CLI installer that runs on any Linux system with GRUB2 tools available. Downloads the latest Gdisk files from GitHub and deploys them to the target device.
 
 **Requirements:** Linux with `git`, `parted`, `mkfs.vfat`, `grub-bios-setup` (from `grub-pc-bin`)
-
-```bash
-git clone https://github.com/GlitchLinux/Gdisk.git
-cd Gdisk/boot/Gdisk-Installer/
-sudo ./gdisk-v3-installer.sh
-```
 
 Three operations are available:
 
@@ -99,6 +92,10 @@ Three operations are available:
 - **Repair** - Reinstall the MBR core.img and/or UEFI BOOTX64.EFI on an existing Gdisk device without touching user data. Useful when the boot chain is broken but your ISOs and other files are fine.
 
 ### Method 2 - Windows Installer (gdisk-v3-installer.exe)
+
+| Image | Format | Description |
+|---|---|---|
+| [gdisk-v3-installer.exe](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer.exe) | Portable Windows Executable | GUI Installer |
 
 A portable GUI installer for Windows and WinPE. Everything is self-contained - `wget.exe`, `7z.exe` and a cross-compiled `grub-bios-setup.exe` are all embedded. No installation or external dependencies required.
 
@@ -113,21 +110,33 @@ Operations:
 
 ### Method 3 - iPXE Network Boot (no local media needed)
 
+| Image | Format | Description |
+|---|---|---|
+| [Gdisk-v3-Installer-iPXE-HYBRID.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-hybrid.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-v3-Installer-iPXE-EFI.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+
 For situations where you don't have a working Linux or Windows environment available, or you want to install Gdisk to the same disk you're booting from.
 
 iPXE images boot a minimal Debian live system entirely into RAM via network boot. Once booted, the Gdisk installer runs automatically. Because the OS is running from RAM, the target disk is completely free - you can install Gdisk to the very disk you booted from.
 
 **Requirements:** Wired internet connection (Ethernet). The iPXE boot image must be flashed to a USB stick or disk first using any raw image writer (dd, Rufus, Etcher, etc).
 
-**Available iPXE images:**
+**iPXE install workflow:**
 
-| Image | Format | Description |
-|---|---|---|
-| [Gdisk-v3-Installer-iPXE-HYBRID.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-hybrid.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
-| [Gdisk-v3-Installer-iPXE-EFI.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
-
+1. Download the iPXE ISO image
+2. Launch in Virtual-Machine OR: 
+3. Flash it to a USB stick using dd, Rufus, Etcher or similar:
+   ```bash
+   sudo dd if=gdisk-v3-installer-ipxe-hybrid.iso of=/dev/sdX bs=4M status=progress
+   ```
+4. Boot the target machine from the USB stick (BIOS or UEFI)
+5. The system network-boots a minimal Debian live environment into RAM
+6. The Gdisk installer (`gdisk-v3.sh`) starts automatically
+7. Select your target disk - this can be the same USB stick you booted from, since the live system is running entirely from RAM
+8. The installer downloads and deploys Gdisk to the target
 
 ---
+
 
 ## Booting
 
