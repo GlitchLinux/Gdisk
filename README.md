@@ -127,8 +127,7 @@ You can also test a device without rebooting using the bundled QEMU scripts:
 hybrid BIOS + UEFI El Torito image recognised by Rufus):
 
 ```bash
-boot/Gdisk-Mkiso/gdisk-mkiso.sh
-boot/Gdisk-Mkiso/gdisk-hybrid-iso.sh
+sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 ```
 
 ```
