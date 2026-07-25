@@ -132,14 +132,15 @@ boot/Gdisk-Mkiso/gdisk-hybrid-iso.sh
 ```
 
 ```
-     .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP 
-    dMP"      dMP VMP   amr   dMP" VP   dMP dMP  
-   dMP MMP"  dMP dMP   dMP    VMMMb    dMMMM"   
-  dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP"AMF    
-  VMMMP"   dMMMMP"   dMP    VMMMP"   dMP dMP
-  ╭──────────────────────────────────────╮
-  │ Grub   Device   Image   System   Kit │
-  ╰──────────────────────────────────────╯
+╭────────────────────────────────────────────────╮
+│    .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP │
+│   dMP"      dMP VMP   amr   dMP" VP   dMP dMP  │
+│  dMP MMP"  dMP dMP   dMP    VMMMb    dMMMM"    │   
+│ dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP"AMF    │ 
+│ VMMMP"   dMMMMP"   dMP    VMMMP"   dMP dMP     │
+╭────────────────────────────────────────────────╮
+│  Grub2   Device   Image   System   Kit  -  v3  │
+╰────────────────────────────────────────────────╯
 ```
 
 ---
