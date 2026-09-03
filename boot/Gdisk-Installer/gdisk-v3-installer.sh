@@ -95,6 +95,8 @@ cleanup() {
     mountpoint -q "$MNT" 2>/dev/null && umount "$MNT" 2>/dev/null
     mountpoint -q "$MNT_DATA" 2>/dev/null && umount "$MNT_DATA" 2>/dev/null
     rm -rf "$WORK_DIR" 2>/dev/null
+    [ -n "${EFI_IMG_STAGE:-}" ] && rm -rf "$EFI_IMG_STAGE" 2>/dev/null
+    rm -rf /tmp/gdisk-grub-offline-$$ 2>/dev/null
     rmdir "$MNT" 2>/dev/null
     rmdir "$MNT_DATA" 2>/dev/null
 }
@@ -127,6 +129,25 @@ detect_pm() {
     return 1
 }
 
+# refresh the package index for the detected pm. Runs once per invocation.
+PM_INDEX_REFRESHED=0
+pm_refresh() {
+    [ "$PM_INDEX_REFRESHED" = "1" ] && return 0
+    msg "Refreshing package index..."
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq >/dev/null 2>&1 || warn "apt-get update failed (continuing)"
+    elif command -v dnf >/dev/null 2>&1; then
+        dnf -q makecache >/dev/null 2>&1 || warn "dnf makecache failed (continuing)"
+    elif command -v yum >/dev/null 2>&1; then
+        yum -q makecache >/dev/null 2>&1 || warn "yum makecache failed (continuing)"
+    elif command -v pacman >/dev/null 2>&1; then
+        pacman -Sy --noconfirm >/dev/null 2>&1 || warn "pacman -Sy failed (continuing)"
+    elif command -v zypper >/dev/null 2>&1; then
+        zypper -q refresh >/dev/null 2>&1 || warn "zypper refresh failed (continuing)"
+    fi
+    PM_INDEX_REFRESHED=1
+}
+
 # offer to install a set of packages via the detected package manager.
 # Returns 0 if installed successfully OR if user declined (caller decides
 # whether that is fatal). Returns 1 only on install failure.
@@ -146,6 +167,7 @@ offer_install() {
     if [[ "$a" =~ ^[Nn]$ ]]; then
         return 0
     fi
+    pm_refresh
     msg "Installing ${label}..."
     # shellcheck disable=SC2086
     $pm "${pkgs[@]}" || { err "install of ${pkgs[*]} failed"; return 1; }
@@ -160,17 +182,76 @@ need() {
 }
 need parted git dd lsblk blkid partprobe wipefs sync losetup mkfs.vfat
 
+# Absolute paths to installer-shipped helpers. Populated by
+# install-time detection - the installer runs from various working
+# directories (repo checkout, USB root, systemd service) so we resolve
+# them once relative to the script location.
+INSTALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Attempt to extract /usr/sbin/grub-bios-setup from the bundled offline
+# .deb (grub-pc_2.12-9+deb13u2_amd64.deb). Populates BIOS_SETUP on
+# success. This is the "offline fallback" path for systems where apt
+# install failed to place grub-bios-setup on PATH (missing repos,
+# broken mirror, etc.).
+extract_bundled_grub() {
+    local rebuild_sh="$INSTALLER_DIR/grub-pc-efi.tar.xz.sh"
+    local bundle="$INSTALLER_DIR/grub-pc-efi.tar.xz"
+    local stagedir="/tmp/gdisk-grub-offline-$$"
+
+    if [ ! -f "$bundle" ] && [ ! -f "$rebuild_sh" ]; then
+        warn "no bundled grub-pc-efi.tar.xz(.sh) found beside installer"
+        return 1
+    fi
+
+    mkdir -p "$stagedir"
+
+    # Rebuild the tarball from the self-extracting script if the raw
+    # tar.xz is not present.
+    if [ ! -f "$bundle" ]; then
+        info "Rebuilding bundled grub .deb archive..."
+        ( cd "$stagedir" && cp "$rebuild_sh" . && \
+          bash "$(basename "$rebuild_sh")" </dev/null >/dev/null 2>&1 ) \
+            || { warn "bundled archive rebuild failed"; rm -rf "$stagedir"; return 1; }
+        bundle="$stagedir/grub-pc-efi.tar.xz"
+        [ -f "$bundle" ] || { warn "expected $bundle after rebuild"; rm -rf "$stagedir"; return 1; }
+    fi
+
+    info "Extracting grub-bios-setup from bundled .deb..."
+    tar -xJf "$bundle" -C "$stagedir" || { warn "tar extract failed"; rm -rf "$stagedir"; return 1; }
+
+    local deb; deb="$(ls "$stagedir"/grub-pc_*.deb 2>/dev/null | head -1)"
+    [ -f "$deb" ] || { warn "grub-pc .deb not found in bundle"; rm -rf "$stagedir"; return 1; }
+
+    # Extract the .deb's data.tar.xz and pull the grub-bios-setup binary
+    # + its shared modules directory into /usr/local/sbin and
+    # /usr/local/lib respectively. Local prefix avoids stomping on
+    # anything the distro's package manager may install later.
+    ( cd "$stagedir" && ar x "$deb" data.tar.xz ) \
+        || { warn "ar extract of data.tar.xz failed"; rm -rf "$stagedir"; return 1; }
+
+    mkdir -p /usr/local/sbin
+    tar -xJf "$stagedir/data.tar.xz" -C "$stagedir" ./usr/sbin/grub-bios-setup \
+        2>/dev/null \
+        || { warn "grub-bios-setup not present in .deb payload"; rm -rf "$stagedir"; return 1; }
+
+    install -m 755 "$stagedir/usr/sbin/grub-bios-setup" /usr/local/sbin/grub-bios-setup \
+        || { warn "install of grub-bios-setup failed"; rm -rf "$stagedir"; return 1; }
+
+    rm -rf "$stagedir"
+    BIOS_SETUP="/usr/local/sbin/grub-bios-setup"
+    msg "Bundled grub-bios-setup installed at ${HL}${BIOS_SETUP}${NC}"
+    return 0
+}
+
 # Verify grub-pc-bin (BIOS) and grub-efi tooling are available. Without
 # these the installer would silently skip BIOS boot setup, leaving a
 # UEFI-only device with no warning. Prompt the user to install if missing.
 check_boot_tools() {
-    local need_install=0
-
     # BIOS: grub-bios-setup binary (from grub-pc-bin on Debian/Ubuntu,
     # grub2-pc-modules on Fedora, or grub-common elsewhere).
     BIOS_SETUP=""
     for t in grub-bios-setup grub2-bios-setup; do
-        for p in "$t" "/sbin/$t" "/usr/sbin/$t"; do
+        for p in "$t" "/sbin/$t" "/usr/sbin/$t" "/usr/local/sbin/$t"; do
             command -v "$p" >/dev/null 2>&1 && { BIOS_SETUP="$p"; break 2; }
         done
     done
@@ -188,15 +269,24 @@ check_boot_tools() {
             pkgs=(grub2-i386-pc grub2)
         fi
 
-        offer_install "grub-bios-setup (BIOS boot support)" "${pkgs[@]}" \
-            || need_install=1
+        offer_install "grub-bios-setup (BIOS boot support)" "${pkgs[@]}" || true
 
         # re-detect after install attempt
         for t in grub-bios-setup grub2-bios-setup; do
-            for p in "$t" "/sbin/$t" "/usr/sbin/$t"; do
+            for p in "$t" "/sbin/$t" "/usr/sbin/$t" "/usr/local/sbin/$t"; do
                 command -v "$p" >/dev/null 2>&1 && { BIOS_SETUP="$p"; break 2; }
             done
         done
+
+        # Offline fallback: extract the bundled .deb payload. Runs
+        # automatically if the package manager attempt did not produce
+        # the binary. Silent on failure - we fall through to the same
+        # UEFI-only confirmation prompt as before.
+        if [ -z "$BIOS_SETUP" ]; then
+            warn "grub-bios-setup not available from the package manager."
+            info "Attempting offline install from bundled .deb..."
+            extract_bundled_grub || true
+        fi
 
         if [ -z "$BIOS_SETUP" ]; then
             warn "grub-bios-setup still not available."
@@ -386,6 +476,52 @@ part_node() {
     if [[ "$disk" =~ [0-9]$ ]]; then echo "${disk}p${idx}"; else echo "${disk}${idx}"; fi
 }
 
+# Ensure the pre-built EFI disk image is on disk and return its path
+# via echo. The image is a 20 MB MBR disk with a single FAT16 boot
+# partition containing the full Gdisk EFI/ tree - a verified-bootable
+# artefact that we dd onto the target to skip all the fragile
+# partition-table + format + copy sequencing for the ESP.
+#
+# Ships as Gdisk_Efi-20MB.img packed inside Gdisk-Efi.tar.xz, which
+# itself is a self-extracting base64 script (Gdisk-Efi.tar.xz.sh) to
+# survive text-only transports.
+# Stable staging dir for the extracted EFI image. Idempotent - if the
+# image is already extracted here from a prior call in this run, we
+# reuse it.
+EFI_IMG_STAGE="/tmp/gdisk-efi-image-$$"
+ensure_efi_image() {
+    local stagedir="$EFI_IMG_STAGE"
+    local img="$stagedir/Gdisk_Efi-20MB.img"
+
+    # Idempotent fast path
+    if [ -f "$img" ]; then
+        echo "$img"; return 0
+    fi
+
+    local rebuild_sh="$INSTALLER_DIR/Gdisk-Efi.tar.xz.sh"
+    local bundle="$INSTALLER_DIR/Gdisk-Efi.tar.xz"
+    mkdir -p "$stagedir"
+
+    if [ ! -f "$bundle" ]; then
+        [ -f "$rebuild_sh" ] || die "missing Gdisk-Efi.tar.xz(.sh) beside installer"
+        # Rebuild only if we haven't already staged the tarball here
+        if [ ! -f "$stagedir/Gdisk-Efi.tar.xz" ]; then
+            info "Rebuilding pre-built EFI image archive..." >&2
+            ( cd "$stagedir" && cp "$rebuild_sh" . && \
+              bash "$(basename "$rebuild_sh")" </dev/null >/dev/null 2>&1 ) \
+                || die "Gdisk-Efi.tar.xz rebuild failed"
+        fi
+        bundle="$stagedir/Gdisk-Efi.tar.xz"
+    fi
+
+    info "Extracting Gdisk_Efi-20MB.img..." >&2
+    tar -xJf "$bundle" -C "$stagedir" \
+        || die "Gdisk-Efi.tar.xz extract failed"
+
+    [ -f "$img" ] || die "Gdisk_Efi-20MB.img not found in bundle"
+    echo "$img"
+}
+
 # Wipe disk and write a fresh MBR table + partition layout.
 #   layout=fat32          -> one FAT32 partition (size_spec applies)
 #   layout=fat32_ntfs     -> 32 MB FAT32 + NTFS partition (size_spec applies to data)
@@ -418,30 +554,39 @@ make_layout() {
         fat32_ntfs|fat32_exfat)
             local data_fs="ntfs"
             [ "$layout" = "fat32_exfat" ] && data_fs="exfat"
-            msg "Creating hybrid layout: FAT32 (${HL}${EFI_PART_SIZE}${NC}) + ${data_fs^^} (${HL}${size_spec}${NC})"
 
-            # FAT32 boot partition: 1MiB .. 1MiB+EFI_PART_SIZE
-            # parted accepts a size expression on the end position; use MiB
-            # arithmetic so we control alignment precisely.
-            local efi_mib="${EFI_PART_SIZE%MiB}"
-            local efi_end_mib=$(( 1 + efi_mib ))
-            parted -s "$disk" mkpart primary fat32 "1MiB" "${efi_end_mib}MiB"
-            parted -s "$disk" set 1 boot on
-            parted -s "$disk" set 1 lba on
+            local efi_img; efi_img="$(ensure_efi_image)"
+            local efi_bytes; efi_bytes="$(stat -c%s "$efi_img")"
+            local efi_mib=$(( efi_bytes / 1024 / 1024 ))
+            [ "$efi_mib" -gt 0 ] || die "EFI image size invalid: $efi_bytes bytes"
+
+            msg "Writing pre-built EFI image (${HL}${efi_mib} MiB${NC}) to ${HL}${disk}${NC}"
+            # NOTE: this dd runs BEFORE the mklabel above (which happens
+            # at function entry). We already wiped and zeroed the first
+            # 8 MiB and wrote an msdos label. Overwrite everything with
+            # the pre-built image now - it brings its own MBR + boot
+            # flag + FAT16 partition table.
+            dd if="$efi_img" of="$disk" bs=1M conv=fsync status=none \
+                || die "dd of EFI image failed"
+            partprobe "$disk"; sleep 1
+
+            # The pre-built image occupies partition 1. Add partition 2
+            # after it for the data volume.
+            msg "Creating hybrid layout: FAT16 EFI (pre-built, ${HL}${efi_mib} MiB${NC}) + ${data_fs^^} (${HL}${size_spec}${NC})"
+            local data_start_mib=$(( efi_mib + 1 ))    # +1 MiB align gap
 
             if [ "$size_spec" = "MAX" ]; then
-                parted -s "$disk" mkpart primary ntfs "${efi_end_mib}MiB" 100%
+                parted -s "$disk" mkpart primary ntfs "${data_start_mib}MiB" 100%
             else
-                # size_spec like "20G" or "4096M" -> compute end as start + spec
                 local end_expr
                 if [[ "$size_spec" =~ ^([0-9]+)[Gg]$ ]]; then
-                    end_expr="$(( efi_end_mib + ${BASH_REMATCH[1]} * 1024 ))MiB"
+                    end_expr="$(( data_start_mib + ${BASH_REMATCH[1]} * 1024 ))MiB"
                 elif [[ "$size_spec" =~ ^([0-9]+)[Mm]$ ]]; then
-                    end_expr="$(( efi_end_mib + ${BASH_REMATCH[1]} ))MiB"
+                    end_expr="$(( data_start_mib + ${BASH_REMATCH[1]} ))MiB"
                 else
                     die "invalid size: $size_spec"
                 fi
-                parted -s "$disk" mkpart primary ntfs "${efi_end_mib}MiB" "$end_expr"
+                parted -s "$disk" mkpart primary ntfs "${data_start_mib}MiB" "$end_expr"
             fi
             partprobe "$disk"; sleep 1
 
@@ -496,58 +641,27 @@ format_data_exfat() {
 
 deploy_files() {
     local main_part="$1"     # partition that hosts the full /boot/grub tree
-    local boot_part="${2:-}" # optional: separate FAT32 partition for EFI (hybrid only)
+    local hybrid="${2:-}"    # non-empty = pre-built EFI partition already in place
 
     mkdir -p "$MNT"
     mount "$main_part" "$MNT" || die "mount $main_part failed"
     msg "Deploying Gdisk files from repo to ${HL}$main_part${NC}"
 
-    # Copy repo contents to main partition, excluding .git metadata
+    # Copy repo contents to main partition. In hybrid mode we skip
+    # EFI/ because the pre-built EFI image already ships the full
+    # EFI/ tree (BOOTX64.EFI, refind/, iPXE/, grubfm/). Copying it
+    # again onto the NTFS/exFAT data partition wastes space and
+    # confuses the firmware search order.
+    local rsync_extra=()
+    if [ -n "$hybrid" ]; then
+        rsync_extra=(--exclude='EFI')
+    fi
+
     rsync -a --exclude='.git' --exclude='.gitignore' --exclude='.gitattributes' \
-          --exclude='README.md' --exclude='LICENSE' \
+          --exclude='README.md' --exclude='LICENSE' "${rsync_extra[@]}" \
           "$REPO_DIR"/ "$MNT"/ \
         || die "file deployment failed"
     sync
-
-    if [ -n "$boot_part" ]; then
-        # Hybrid: mount the tiny FAT32 boot partition and put just the
-        # UEFI shim + x86_64-efi modules there, so the firmware can pick
-        # up BOOTX64.EFI without needing NTFS/exFAT read support.
-        mkdir -p "$MNT_DATA"
-        mount "$boot_part" "$MNT_DATA" || die "mount $boot_part failed"
-        msg "Installing UEFI shim on ${HL}$boot_part${NC}"
-        mkdir -p "$MNT_DATA/EFI/BOOT" "$MNT_DATA/boot/grub/x86_64-efi"
-        cp -f "$PATCH_EFIBIN" "$MNT_DATA/EFI/BOOT/BOOTX64.EFI"
-        cp -f "$PATCH_EFIMODS"/*.mod "$MNT_DATA/boot/grub/x86_64-efi/" 2>/dev/null || true
-        cp -f "$PATCH_EFIMODS"/*.lst "$MNT_DATA/boot/grub/x86_64-efi/" 2>/dev/null || true
-        # Minimal grub.cfg on the ESP that hands off to the main tree.
-        # The full grub.cfg lives on the data partition alongside the
-        # rest of Gdisk; the ESP just needs to find it.
-        cat > "$MNT_DATA/boot/grub/grub.cfg" <<'ESPEOF'
-# Hybrid-layout ESP hand-off: locate the main Gdisk tree and chain to
-# its grub.cfg. The main tree lives on Gdisk-Ntfs or Gdisk-exFAT.
-insmod part_msdos
-insmod ntfs
-insmod exfat
-insmod search_label
-insmod configfile
-
-search --label --no-floppy --set=root Gdisk-Ntfs
-if [ -z "${root}" ]; then
-    search --label --no-floppy --set=root Gdisk-exFAT
-fi
-
-if [ -n "${root}" ]; then
-    configfile /boot/grub/grub.cfg
-else
-    echo "ERROR: Gdisk data partition not found."
-    echo "Expected label Gdisk-Ntfs or Gdisk-exFAT."
-    sleep 30
-fi
-ESPEOF
-        sync
-        umount "$MNT_DATA" 2>/dev/null || true
-    fi
 
     msg "Files deployed"
 }
@@ -651,18 +765,17 @@ op_create() {
             finalize "$disk" "$BOOT_PART"
             ;;
         fat32_ntfs)
-            format_boot_fat "$BOOT_PART" "$EFI_LABEL"
             format_data_ntfs "$DATA_PART"
-            # Main tree goes on NTFS; ESP gets a UEFI shim + hand-off
-            deploy_files "$DATA_PART" "$BOOT_PART"
+            # Main tree goes on NTFS; pre-built EFI image already
+            # populated the ESP by dd during make_layout.
+            deploy_files "$DATA_PART" hybrid
             # BIOS boot: /boot/grub lives on NTFS, so aim grub-bios-setup there
             install_bios_boot "$disk" "$DATA_PART"
             finalize "$disk" "$DATA_PART"
             ;;
         fat32_exfat)
-            format_boot_fat "$BOOT_PART" "$EFI_LABEL"
             format_data_exfat "$DATA_PART"
-            deploy_files "$DATA_PART" "$BOOT_PART"
+            deploy_files "$DATA_PART" hybrid
             install_bios_boot "$disk" "$DATA_PART"
             finalize "$disk" "$DATA_PART"
             ;;
