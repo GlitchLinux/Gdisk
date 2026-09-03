@@ -51,6 +51,11 @@ exec qemu-system-x86_64 \\
     -machine type=pc,accel=kvm:tcg \\
     -drive file="$DISK",format=raw,if=virtio,cache=none \\
     -boot order=c,menu=off \\
+    -vga std \\
+    -global VGA.vgamem_mb=64 \\
+    -global VGA.xres=$XRES \\
+    -global VGA.yres=$YRES \\
+    -display gtk,zoom-to-fit=on \\
     -netdev user,id=net0 \\
     -device virtio-net-pci,netdev=net0 \\
     -usb -device usb-tablet \\
@@ -91,6 +96,11 @@ exec qemu-system-x86_64 \\
     -drive if=pflash,format=raw,file="$VARS_COPY" \\
     -drive file="$DISK",format=raw,if=virtio,cache=none \\
     -boot order=c,menu=off \\
+    -vga std \\
+    -global VGA.vgamem_mb=64 \\
+    -global VGA.xres=$XRES \\
+    -global VGA.yres=$YRES \\
+    -display gtk,zoom-to-fit=on \\
     -netdev user,id=net0 \\
     -device virtio-net-pci,netdev=net0 \\
     -usb -device usb-tablet \\
