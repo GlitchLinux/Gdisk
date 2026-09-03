@@ -1,0 +1,10 @@
+# ╔════════════════════════════════════╗
+# ║ Gdisk v3.1 - Multibooter Utiltity  ║
+# ║ rEFInd ~ agFM ~ iPXE ~ ISO booter  ║
+# ║ Vhd ~ img ~ Vtoy ~ WinPe ~ Linux   ║
+# ║ Git: Github.com/GlitchLinux/Gdisk  ║
+# ╚════════════════════════════════════╝═══╗
+# ║ ADD BOOTABLE FILES IN THIS DIRECTORY!  ║
+# ║ "/Gdisk" is automatically scanned for: ║
+# ║ .iso .img .vtoy .wim .vhd .vhdx .ima   ║
+# ╚════════════════════════════════════════╝
