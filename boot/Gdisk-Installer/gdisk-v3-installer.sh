@@ -188,6 +188,17 @@ need parted git dd lsblk blkid partprobe wipefs sync losetup mkfs.vfat
 # them once relative to the script location.
 INSTALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Prefer the cached git clone if it holds the offline bundle files,
+# since the installer itself may have been fetched to /tmp via wget
+# where the .tar.xz.sh helpers are not present.
+resolve_installer_dir() {
+    local clone_dir="$DL_DIR/boot/Gdisk-Installer"
+    if [ ! -f "$INSTALLER_DIR/Gdisk-Efi.tar.xz.sh" ] && \
+       [ -f "$clone_dir/Gdisk-Efi.tar.xz.sh" ]; then
+        INSTALLER_DIR="$clone_dir"
+    fi
+}
+
 # Attempt to extract /usr/sbin/grub-bios-setup from the bundled offline
 # .deb (grub-pc_2.12-9+deb13u2_amd64.deb). Populates BIOS_SETUP on
 # success. This is the "offline fallback" path for systems where apt
@@ -222,19 +233,45 @@ extract_bundled_grub() {
     local deb; deb="$(ls "$stagedir"/grub-pc_*.deb 2>/dev/null | head -1)"
     [ -f "$deb" ] || { warn "grub-pc .deb not found in bundle"; rm -rf "$stagedir"; return 1; }
 
-    # Extract the .deb's data.tar.xz and pull the grub-bios-setup binary
-    # + its shared modules directory into /usr/local/sbin and
-    # /usr/local/lib respectively. Local prefix avoids stomping on
-    # anything the distro's package manager may install later.
+    # Extract the .deb's data.tar.xz. Debian's grub-pc .deb only
+    # contains SYMLINKS to the actual binaries (which live in
+    # grub-pc-bin's /usr/lib/grub/i386-pc/ tree). Try the real path
+    # first, and if it isn't in this payload, fall back to resolving
+    # the /usr/sbin/ symlink and extracting whichever real file it
+    # points at.
     ( cd "$stagedir" && ar x "$deb" data.tar.xz ) \
         || { warn "ar extract of data.tar.xz failed"; rm -rf "$stagedir"; return 1; }
 
-    mkdir -p /usr/local/sbin
-    tar -xJf "$stagedir/data.tar.xz" -C "$stagedir" ./usr/sbin/grub-bios-setup \
-        2>/dev/null \
-        || { warn "grub-bios-setup not present in .deb payload"; rm -rf "$stagedir"; return 1; }
+    local extracted=""
+    if tar -xJf "$stagedir/data.tar.xz" -C "$stagedir" \
+            ./usr/lib/grub/i386-pc/grub-bios-setup 2>/dev/null; then
+        extracted="$stagedir/usr/lib/grub/i386-pc/grub-bios-setup"
+    elif tar -xJf "$stagedir/data.tar.xz" -C "$stagedir" \
+            ./usr/sbin/grub-bios-setup 2>/dev/null; then
+        # Might be a symlink; if so, follow it and extract the target
+        # from the same tarball.
+        local link="$stagedir/usr/sbin/grub-bios-setup"
+        if [ -L "$link" ]; then
+            local tgt; tgt="$(readlink "$link")"
+            # tgt is usually "../lib/grub/i386-pc/grub-bios-setup"
+            local abs="./usr/${tgt#../}"
+            if tar -xJf "$stagedir/data.tar.xz" -C "$stagedir" "$abs" 2>/dev/null; then
+                extracted="$stagedir/${abs#./}"
+            fi
+        elif [ -f "$link" ]; then
+            extracted="$link"
+        fi
+    fi
 
-    install -m 755 "$stagedir/usr/sbin/grub-bios-setup" /usr/local/sbin/grub-bios-setup \
+    if [ -z "$extracted" ] || [ ! -f "$extracted" ]; then
+        warn "grub-bios-setup binary not present in bundled .deb"
+        warn "(bundle only contains symlinks; the actual binary lives in grub-pc-bin)"
+        rm -rf "$stagedir"
+        return 1
+    fi
+
+    mkdir -p /usr/local/sbin
+    install -m 755 "$extracted" /usr/local/sbin/grub-bios-setup \
         || { warn "install of grub-bios-setup failed"; rm -rf "$stagedir"; return 1; }
 
     rm -rf "$stagedir"
@@ -243,18 +280,35 @@ extract_bundled_grub() {
     return 0
 }
 
+# Locate grub-bios-setup, checking both standard PATH and the Debian
+# location. On Debian 12/13 the binary lives at
+# /usr/lib/grub/i386-pc/grub-bios-setup and is NOT on PATH - the
+# /usr/sbin/grub-bios-setup symlink is provided by the grub-pc
+# metapackage, not by grub-pc-bin, so a system with just grub-pc-bin
+# installed will only have the /usr/lib/grub/... path. Populates
+# BIOS_SETUP on success.
+locate_bios_setup() {
+    BIOS_SETUP=""
+    local t p
+    for t in grub-bios-setup grub2-bios-setup; do
+        for p in "$t" "/sbin/$t" "/usr/sbin/$t" "/usr/local/sbin/$t"; do
+            command -v "$p" >/dev/null 2>&1 && { BIOS_SETUP="$p"; return 0; }
+        done
+    done
+    # Debian-style unshimmed layout
+    for p in /usr/lib/grub/i386-pc/grub-bios-setup \
+             /usr/lib/grub/i386-pc/grub2-bios-setup \
+             /usr/lib/grub2/i386-pc/grub-bios-setup; do
+        [ -x "$p" ] && { BIOS_SETUP="$p"; return 0; }
+    done
+    return 1
+}
+
 # Verify grub-pc-bin (BIOS) and grub-efi tooling are available. Without
 # these the installer would silently skip BIOS boot setup, leaving a
 # UEFI-only device with no warning. Prompt the user to install if missing.
 check_boot_tools() {
-    # BIOS: grub-bios-setup binary (from grub-pc-bin on Debian/Ubuntu,
-    # grub2-pc-modules on Fedora, or grub-common elsewhere).
-    BIOS_SETUP=""
-    for t in grub-bios-setup grub2-bios-setup; do
-        for p in "$t" "/sbin/$t" "/usr/sbin/$t" "/usr/local/sbin/$t"; do
-            command -v "$p" >/dev/null 2>&1 && { BIOS_SETUP="$p"; break 2; }
-        done
-    done
+    locate_bios_setup
 
     if [ -z "$BIOS_SETUP" ]; then
         # Package name differs by distro. Try the common ones.
@@ -271,12 +325,7 @@ check_boot_tools() {
 
         offer_install "grub-bios-setup (BIOS boot support)" "${pkgs[@]}" || true
 
-        # re-detect after install attempt
-        for t in grub-bios-setup grub2-bios-setup; do
-            for p in "$t" "/sbin/$t" "/usr/sbin/$t" "/usr/local/sbin/$t"; do
-                command -v "$p" >/dev/null 2>&1 && { BIOS_SETUP="$p"; break 2; }
-            done
-        done
+        locate_bios_setup
 
         # Offline fallback: extract the bundled .deb payload. Runs
         # automatically if the package manager attempt did not produce
@@ -394,6 +443,12 @@ acquire_sources() {
 
     [ -f "$PATCH_CORE" ]    || die "repo missing core-patched.img"
     [ -f "$PATCH_BOOTIMG" ] || die "repo missing boot.img"
+
+    # Now that the clone is available, prefer its Gdisk-Installer
+    # directory for offline bundle lookups (Gdisk-Efi.tar.xz.sh,
+    # grub-pc-efi.tar.xz.sh) - the installer script itself may have
+    # been fetched to /tmp via wget without those files.
+    resolve_installer_dir
 }
 
 # ====================================================================
@@ -710,8 +765,8 @@ install_uefi_boot() {
 op_create() {
     header "Create Gdisk Device"
     info "CREATE - new Gdisk device on a whole disk"
-    check_boot_tools
     acquire_sources
+    check_boot_tools
     pick_disk
     local disk="$REPLY_DISK"
     confirm_destroy "$disk"
@@ -785,8 +840,8 @@ op_create() {
 op_update() {
     header "Update Gdisk"
     info "UPDATE - install/refresh Gdisk onto an EXISTING partition"
-    check_boot_tools
     acquire_sources
+    check_boot_tools
     pick_partition
     local part="$REPLY_PART"
     resolve_parent "$part"
@@ -829,8 +884,8 @@ op_update() {
 op_repair() {
     header "Repair Gdisk"
     info "REPAIR - fix MBR / UEFI boot on an existing Gdisk device"
-    check_boot_tools
     acquire_sources
+    check_boot_tools
     pick_partition
     local part="$REPLY_PART"
     resolve_parent "$part"
