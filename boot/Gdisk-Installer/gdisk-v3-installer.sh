@@ -180,7 +180,27 @@ need() {
         have "$t" || die "missing required tool: $t"
     done
 }
-need parted git dd lsblk blkid partprobe wipefs sync losetup mkfs.vfat
+need parted git dd lsblk blkid partprobe wipefs sync losetup mkfs.vfat tar rsync ar
+
+# xz is required to extract the pre-built EFI image (Gdisk-Efi.tar.xz)
+# and the bundled grub-pc .deb (grub-pc-efi.tar.xz). Prompt to install
+# it up-front so the user doesn't hit an opaque tar failure mid-install.
+check_xz() {
+    have xz && return 0
+    local pkgs=()
+    if command -v apt-get >/dev/null 2>&1; then
+        pkgs=(xz-utils)
+    elif command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1; then
+        pkgs=(xz)
+    elif command -v pacman >/dev/null 2>&1; then
+        pkgs=(xz)
+    elif command -v zypper >/dev/null 2>&1; then
+        pkgs=(xz)
+    fi
+    offer_install "xz (needed to extract Gdisk-Efi.tar.xz and bundled .deb)" \
+        "${pkgs[@]}" || die "xz is required to proceed"
+    have xz || die "xz still not available after install"
+}
 
 # Absolute paths to installer-shipped helpers. Populated by
 # install-time detection - the installer runs from various working
@@ -696,24 +716,21 @@ format_data_exfat() {
 
 deploy_files() {
     local main_part="$1"     # partition that hosts the full /boot/grub tree
-    local hybrid="${2:-}"    # non-empty = pre-built EFI partition already in place
+    local hybrid="${2:-}"    # currently informational; EFI/ is deployed on both partitions in hybrid mode
 
     mkdir -p "$MNT"
     mount "$main_part" "$MNT" || die "mount $main_part failed"
     msg "Deploying Gdisk files from repo to ${HL}$main_part${NC}"
 
-    # Copy repo contents to main partition. In hybrid mode we skip
-    # EFI/ because the pre-built EFI image already ships the full
-    # EFI/ tree (BOOTX64.EFI, refind/, iPXE/, grubfm/). Copying it
-    # again onto the NTFS/exFAT data partition wastes space and
-    # confuses the firmware search order.
-    local rsync_extra=()
-    if [ -n "$hybrid" ]; then
-        rsync_extra=(--exclude='EFI')
-    fi
-
+    # Deploy the full repo tree - INCLUDING EFI/ - to the data
+    # partition. The pre-built ESP already carries EFI/ so the firmware
+    # can find BOOTX64.EFI without needing to read NTFS/exFAT, but
+    # rEFInd / grubfm / iPXE EFI apps also need to be reachable from
+    # /EFI/ on the data volume once GRUB is running. Without this the
+    # user cannot chain into those tools even though the modules are
+    # loaded. The duplication cost is ~10 MB, worth it for the feature.
     rsync -a --exclude='.git' --exclude='.gitignore' --exclude='.gitattributes' \
-          --exclude='README.md' --exclude='LICENSE' "${rsync_extra[@]}" \
+          --exclude='README.md' --exclude='LICENSE' \
           "$REPO_DIR"/ "$MNT"/ \
         || die "file deployment failed"
     sync
@@ -767,6 +784,7 @@ op_create() {
     info "CREATE - new Gdisk device on a whole disk"
     acquire_sources
     check_boot_tools
+    check_xz
     pick_disk
     local disk="$REPLY_DISK"
     confirm_destroy "$disk"
@@ -842,6 +860,7 @@ op_update() {
     info "UPDATE - install/refresh Gdisk onto an EXISTING partition"
     acquire_sources
     check_boot_tools
+    check_xz
     pick_partition
     local part="$REPLY_PART"
     resolve_parent "$part"
@@ -886,6 +905,7 @@ op_repair() {
     info "REPAIR - fix MBR / UEFI boot on an existing Gdisk device"
     acquire_sources
     check_boot_tools
+    check_xz
     pick_partition
     local part="$REPLY_PART"
     resolve_parent "$part"
