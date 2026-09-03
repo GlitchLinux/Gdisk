@@ -1,6 +1,7 @@
 # ╔═══════════════════════════════════════╗
 # ║ ADD BOOTABLE FILES IN THIS DIRECTORY! ║
-# ║ Directory is autoscanned scanned for: ║
+# ╚═══════════════════════════════════════╝
+# ║ Directory is scanned for these files: ║
 # ║ .iso .img .vtoy .wim .vhd .vhdx .ima  ║
 # ╚═══════════════════════════════════════╝
 # ║ After files have been added here then ║
