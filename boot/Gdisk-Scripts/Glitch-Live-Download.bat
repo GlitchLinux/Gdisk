@@ -4,8 +4,11 @@ color 0A
 mode con cols=80 lines=12
 
 cd ..
+cd ..
 
 mkdir glitch-live
+
+copy boot\Gdisk-Installer\wget.exe glitch-live\
 
 cd glitch-live
 
@@ -20,9 +23,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v39 - initrd.img
+echo -----= Downloading Glitch-Linux Live v42 - initrd.img
 echo. 
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/initrd.img" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/initrd.img" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -31,9 +34,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo. 
-echo -----= Downloading Glitch-Linux Live v39 - vmlinuz
+echo -----= Downloading Glitch-Linux Live v42 - vmlinuz
 echo.
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/vmlinuz" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/vmlinuz" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -42,9 +45,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v39 - filesystem.squashfs
-echo.
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/filesystem.squashfs" --no-check-certificate
+echo -----= Downloading Glitch-Linux Live v42 - filesystem.squashfs
+echo. 
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/filesystem.squashfs" --no-check-certificate
 
 del wget.exe
 

@@ -27,6 +27,9 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
   the correct boot handler
 - **WIM / WinPE booting** - `.wim` and WinPE boot on both UEFI (grubfm `wimboot`) and BIOS,
   plus a native Windows Boot Manager loader
+- **VHD / VHDX booting** - native NT6+ boot of `.vhd` and `.vhdx` via `ntboot` on both UEFI
+  and BIOS, plus raw disk-mapping fallbacks (`map`, grub4dos, memdisk) for fixed VHDs.
+  See "VHD / VHDX boot" below for the NTFS requirement.
 - **vDiskChain** - auto-scans all partitions for `.vtoy` disk images and chainloads them
 - **Live-system entries** - direct boot menus for Glitch Linux, Bonsai and other live distros
 - **Bundled loaders** - rEFInd, agFM (grubfm) and an iPXE network-boot framework under `EFI/`
@@ -44,12 +47,14 @@ Gdisk/
 │   │   ├── grub.cfg          primary entry - "Browse Partitions"
 │   │   ├── i386-pc/          BIOS modules + patched core-patched.img / boot.img
 │   │   ├── x86_64-efi/       UEFI modules
-│   │   ├── gdisk-boot.cfg    dynamic loader for .iso .img .wim .vtoy
+│   │   ├── gdisk-boot.cfg    dynamic loader for .iso .img .wim .vhd .vhdx .vtoy
 │   │   ├── gdisk-browse.cfg  directory browser
 │   │   ├── iso-preboot.cfg   ISO pre-boot menu (loopback + OS detection)
 │   │   ├── iso-scan.cfg      speed-optimised ISO scanner
 │   │   ├── wim-preboot.cfg   WIM pre-boot menu
 │   │   ├── winpe-native.cfg  native Windows Boot Manager / WinPE loader
+│   │   ├── vhd-preboot.cfg   VHD/VHDX pre-boot menu (ntboot + raw map fallbacks)
+│   │   ├── vhd-scan.cfg      .vhd/.vhdx auto-scan across all partitions
 │   │   ├── vdiskchain.cfg    .vtoy disk-image auto-scan and chainload
 │   │   ├── glitch-live.cfg   Glitch Linux live boot
 │   │   ├── agFM/  theme/  images/  wimboot/  vdiskchain/   supporting assets
@@ -142,7 +147,34 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
 
 Boot the target device in either BIOS/CSM or UEFI mode. The primary menu opens on
 **Browse Partitions**; from there you can walk partitions and directories, and Gdisk
-routes each `.iso`, `.img`, `.wim` or `.vtoy` to the appropriate pre-boot handler.
+routes each `.iso`, `.img`, `.wim`, `.vhd`, `.vhdx` or `.vtoy` to the appropriate
+pre-boot handler.
+
+### VHD / VHDX boot
+
+Drop `.vhd` or `.vhdx` files into the root, `/VHD/` or `/Gdisk/` of any attached
+partition and pick **VHD / VHDX Boot** from the main menu, or reach them through the
+browser or the Quickboot menu.
+
+Boot methods offered per image:
+
+| Method | Platform | Container support |
+|---|---|---|
+| `ntboot --vhd` (native NT6+ boot) | UEFI + BIOS | fixed and dynamic VHD, VHDX |
+| `map --type=HD` / `map -f` | UEFI | fixed VHD only |
+| grub4dos `map` | BIOS | fixed VHD only |
+| memdisk raw (loads to RAM) | BIOS | fixed VHD only |
+| vDiskChain | UEFI + BIOS | fixed VHD only |
+
+Native boot uses the Windows Boot Manager, so two host-volume constraints apply:
+
+- **The VHD should live on an NTFS volume.** `bootmgr` attaches the VHD with its own
+  filesystem drivers plus `bootvhd.dll`, and does not mount VHDs from FAT32 or exFAT.
+- **FAT32 caps single files at 4 GiB.** Gdisk's own partition is FAT32, so anything
+  larger than 4 GiB has to sit on a separate NTFS partition.
+
+Supporting files live in `boot/grub/wimboot/`: `wimboot.xz` (holds `bootmgfw.efi`) for
+UEFI, and `bootmgr.exe` + `bootvhd.dll` + `boot.sdi` for BIOS.
 
 You can also test a device without rebooting using the bundled QEMU scripts:
 

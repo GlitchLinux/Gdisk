@@ -3,12 +3,10 @@ title Gdisk WinPE Downloader
 color 0A
 mode con cols=80 lines=12
 cd ..
+cd ..
 copy boot\Gdisk-Installer\wget.exe Gdisk\
 cd Gdisk
-del EaseUS_Partition_Pro.vtoy >NUL
-del Diskgenius-Pro-v6.vtoy >NUL
-del NanoTech-11-x64-v1.8-25-July-2026.wim >NUL 
-del NanoTech-11-x64-v1.8.wim >NUL
+del MultiTech-11-X64-v2.6.wim >NUL
 cls
 cls
 echo.
@@ -18,11 +16,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading WinPE Wim - NanoTech-11-x64-v1.8
+echo -----= Downloading WinPE Wim - MultiTech-11-X64-v2.6
 echo.
-wget.exe -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/NanoTech-11-x64/NanoTech-11-x64-v1.8-25-July-2026.wim" --no-check-certificate
-copy NanoTech-11-x64-v1.8-25-July-2026.wim NanoTech-11-x64-v1.8.wim
-del NanoTech-11-x64-v1.8-25-July-2026.wim
+wget.exe -q --show-progress "https://glitchlinux.wtf/FILES/Windows-PE/MultiTech-11-x64/MultiTech-11-X64-v2.6.wim" --no-check-certificate
 del wget.exe
 cls
 echo.

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd ..
+cd ..
 
 sudo mkdir -p glitch-live
 
@@ -16,17 +17,17 @@ echo "tree $PWD" > /tmp/path
 
 cat > "/tmp/.glitch-live.sh" << 'EOF'
 
-echo "Downloading Glitch-Linux Live v39 - initrd.img" | borderize
+echo "Downloading Glitch-Linux Live v42 - initrd.img" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/initrd.img"
 clear
-echo "Downloading Glitch-Linux Live v39 - vmlinuz" | borderize
+echo "Downloading Glitch-Linux Live v42 - vmlinuz" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/vmlinuz"
 clear
-echo "Downloading Glitch-Linux Live v39 - filesystem.squashfs" | borderize
+echo "Downloading Glitch-Linux Live v42 - filesystem.squashfs" | borderize
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v39/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/filesystem.squashfs"
 
 echo " Downloaded Files: " | borderize > /tmp/wget-result
 echo "" >> /tmp/wget-result
@@ -34,7 +35,6 @@ mv -f Glitch-Live-Download.sh /tmp/
 rm -f .ventoyignore
 bash /tmp/path >> /tmp/wget-result
 cp /tmp/Glitch-Live-Download.sh .
-touch .ventoyignore
 clear
 echo "" 
 echo "" >> /tmp/wget-result
