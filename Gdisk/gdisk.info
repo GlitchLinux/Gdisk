@@ -1,10 +1,10 @@
-# ╔════════════════════════════════════╗
-# ║ Gdisk v3.1 - Multibooter Utiltity  ║
-# ║ rEFInd ~ agFM ~ iPXE ~ ISO booter  ║
-# ║ Vhd ~ img ~ Vtoy ~ WinPe ~ Linux   ║
-# ║ Git: Github.com/GlitchLinux/Gdisk  ║
-# ╚════════════════════════════════════╝═══╗
-# ║ ADD BOOTABLE FILES IN THIS DIRECTORY!  ║
-# ║ "/Gdisk" is automatically scanned for: ║
-# ║ .iso .img .vtoy .wim .vhd .vhdx .ima   ║
-# ╚════════════════════════════════════════╝
+# ╔═══════════════════════════════════════╗
+# ║ ADD BOOTABLE FILES IN THIS DIRECTORY! ║
+# ║ Directory is autoscanned scanned for: ║
+# ║ .iso .img .vtoy .wim .vhd .vhdx .ima  ║
+# ╚═══════════════════════════════════════╝
+# ║ After files have been added here then ║
+# ║ run: "boot\Gdisk-Scripts\grub4dos.sh" ║
+# ║ This will generate dynamic grub4dos   ║
+# ║ boot entries for the files in /Gdisk  ║
+# ╚═══════════════════════════════════════╝
