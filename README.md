@@ -27,8 +27,8 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
   the correct boot handler
 - **WIM / WinPE booting** - `.wim` and WinPE boot on both UEFI (grubfm `wimboot`) and BIOS,
   plus a native Windows Boot Manager loader
-- **VHD / VHDX booting** - native NT6+ boot of `.vhd` and `.vhdx` via `ntboot` on both UEFI
-  and BIOS, plus raw disk-mapping fallbacks (`map`, grub4dos, memdisk) for fixed VHDs.
+- **VHD / VHDX booting** - native NT6+ boot of `.vhd` and `.vhdx` via `ntloader` on both
+  UEFI and BIOS, plus raw disk-mapping fallbacks (`map`, grub4dos, memdisk) for fixed VHDs.
   See "VHD / VHDX boot" below for the NTFS requirement.
 - **vDiskChain** - auto-scans all partitions for `.vtoy` disk images and chainloads them
 - **Live-system entries** - direct boot menus for Glitch Linux, Bonsai and other live distros
@@ -53,10 +53,11 @@ Gdisk/
 │   │   ├── iso-scan.cfg      speed-optimised ISO scanner
 │   │   ├── wim-preboot.cfg   WIM pre-boot menu
 │   │   ├── winpe-native.cfg  native Windows Boot Manager / WinPE loader
-│   │   ├── vhd-preboot.cfg   VHD/VHDX pre-boot menu (ntboot + raw map fallbacks)
+│   │   ├── vhd-preboot.cfg   VHD/VHDX pre-boot menu (ntloader, ntboot, raw maps)
 │   │   ├── vhd-scan.cfg      .vhd/.vhdx auto-scan across all partitions
 │   │   ├── vdiskchain.cfg    .vtoy disk-image auto-scan and chainload
 │   │   ├── glitch-live.cfg   Glitch Linux live boot
+│   │   ├── ntloader/         ntloader v3.0.7 + initrd.cpio (NT6+ VHD/VHDX/WIM)
 │   │   ├── agFM/  theme/  images/  wimboot/  vdiskchain/   supporting assets
 │   │   └── font.pf2  grubenv  system.cfg
 │   ├── Gdisk-Installer/      shipped installers: gdisk-v3-installer.sh, gdisk-v3-installer.exe,
@@ -160,11 +161,36 @@ Boot methods offered per image:
 
 | Method | Platform | Container support |
 |---|---|---|
-| `ntboot --vhd` (native NT6+ boot) | UEFI + BIOS | fixed and dynamic VHD, VHDX |
+| **ntloader** (native NT6+ boot) | **UEFI + BIOS** | fixed and dynamic VHD, VHDX |
+| `ntboot --vhd` (native NT6+ boot) | UEFI only | fixed and dynamic VHD, VHDX |
 | `map --type=HD` / `map -f` | UEFI | fixed VHD only |
 | grub4dos `map` | BIOS | fixed VHD only |
 | memdisk raw (loads to RAM) | BIOS | fixed VHD only |
 | vDiskChain | UEFI + BIOS | fixed VHD only |
+
+**ntloader is the default and the only working BIOS path.** a1ive's in-GRUB
+`ntboot` builds a BCD that the BIOS Windows Boot Manager rejects with
+`0xc0000098` ("the Boot Configuration Data file does not contain a valid OS
+entry"). The GRUB side of `ntboot` is fine on BIOS - it renames `bootmgfw.efi`
+to `bootmgr.exe`, injects `bcd` and `bootvhd.dll`, and hands off to the embedded
+iPXE wimboot correctly - but bootmgr will not accept the resulting OS entry.
+`ntboot` entries are kept for UEFI, where they work.
+
+[ntloader](https://github.com/grub4dos/ntloader) v3.0.7 lives in
+`boot/grub/ntloader/` and is loaded as a kernel image:
+
+```
+search -s dev -f /VHD/windows.vhd
+probe -s dev_uuid -u $dev
+linux16 /boot/grub/ntloader/ntloader uuid=${dev_uuid} vhd=/VHD/windows.vhd
+initrd16 /boot/grub/ntloader/initrd.cpio
+```
+
+It locates the host volume by filesystem UUID rather than by MBR signature and
+partition offset, and `initrd.cpio` carries its own `bootmgr.exe`,
+`bootvhd.dll`, `boot.sdi` and EFI boot managers, so it depends on nothing in
+`boot/grub/wimboot/`. Verified booting Windows under QEMU/SeaBIOS from a fixed
+VHD on an NTFS partition.
 
 Native boot uses the Windows Boot Manager, so two host-volume constraints apply:
 
