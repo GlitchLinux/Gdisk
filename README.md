@@ -161,36 +161,13 @@ Boot methods offered per image:
 
 | Method | Platform | Container support |
 |---|---|---|
-| **ntloader** (native NT6+ boot) | **UEFI + BIOS** | fixed and dynamic VHD, VHDX |
-| `ntboot --vhd` (native NT6+ boot) | UEFI only | fixed and dynamic VHD, VHDX |
+| **ntloader** (preferred) | BIOS + UEFI | fixed and dynamic VHD, VHDX |
+| ntloader `ram=` (load to RAM) | BIOS + UEFI | fixed and dynamic VHD, VHDX |
+| `ntboot --vhd` (native NT6+ boot) | UEFI + BIOS | fixed and dynamic VHD, VHDX |
 | `map --type=HD` / `map -f` | UEFI | fixed VHD only |
 | grub4dos `map` | BIOS | fixed VHD only |
 | memdisk raw (loads to RAM) | BIOS | fixed VHD only |
 | vDiskChain | UEFI + BIOS | fixed VHD only |
-
-**ntloader is the default and the only working BIOS path.** a1ive's in-GRUB
-`ntboot` builds a BCD that the BIOS Windows Boot Manager rejects with
-`0xc0000098` ("the Boot Configuration Data file does not contain a valid OS
-entry"). The GRUB side of `ntboot` is fine on BIOS - it renames `bootmgfw.efi`
-to `bootmgr.exe`, injects `bcd` and `bootvhd.dll`, and hands off to the embedded
-iPXE wimboot correctly - but bootmgr will not accept the resulting OS entry.
-`ntboot` entries are kept for UEFI, where they work.
-
-[ntloader](https://github.com/grub4dos/ntloader) v3.0.7 lives in
-`boot/grub/ntloader/` and is loaded as a kernel image:
-
-```
-search -s dev -f /VHD/windows.vhd
-probe -s dev_uuid -u $dev
-linux16 /boot/grub/ntloader/ntloader uuid=${dev_uuid} vhd=/VHD/windows.vhd
-initrd16 /boot/grub/ntloader/initrd.cpio
-```
-
-It locates the host volume by filesystem UUID rather than by MBR signature and
-partition offset, and `initrd.cpio` carries its own `bootmgr.exe`,
-`bootvhd.dll`, `boot.sdi` and EFI boot managers, so it depends on nothing in
-`boot/grub/wimboot/`. Verified booting Windows under QEMU/SeaBIOS from a fixed
-VHD on an NTFS partition.
 
 Native boot uses the Windows Boot Manager, so two host-volume constraints apply:
 
@@ -199,8 +176,22 @@ Native boot uses the Windows Boot Manager, so two host-volume constraints apply:
 - **FAT32 caps single files at 4 GiB.** Gdisk's own partition is FAT32, so anything
   larger than 4 GiB has to sit on a separate NTFS partition.
 
-Supporting files live in `boot/grub/wimboot/`: `wimboot.xz` (holds `bootmgfw.efi`) for
-UEFI, and `bootmgr.exe` + `bootvhd.dll` + `boot.sdi` for BIOS.
+### Why ntloader is preferred for BIOS
+
+On UEFI, `bootmgfw.efi` has VHD support compiled in. On BIOS, `bootmgr` must load
+`\boot\bootvhd.dll` to attach the VHD, and Windows boot modules are version-locked:
+a mismatched `bootmgr` / `bootvhd.dll` pair is rejected with Windows Boot Manager
+status `0xc0000098` (`STATUS_FILE_INVALID`). ntloader ships its own `initrd.cpio`
+containing a matched 10.0.20348 set (`bootmgr.exe`, `bootvhd.dll`, `boot.sdi`,
+`bootx64.efi`), which avoids the problem entirely.
+
+The `ntboot` entries remain as a fallback. They use `bootmgr-nt11.exe`
+(10.0.22621.2283) paired with `bootvhd.dll` (10.0.22621.1555) rather than the older
+`bootmgr.exe` (10.0.19041.1), which is kept only for the BIOS WIM boot path.
+
+Supporting files live in `boot/grub/ntloader/` (ntloader binaries plus `initrd.cpio`)
+and `boot/grub/wimboot/` (`wimboot.xz` holding `bootmgfw.efi` for UEFI, plus
+`bootmgr.exe`, `bootmgr-nt11.exe`, `bootvhd.dll` and `boot.sdi` for BIOS).
 
 You can also test a device without rebooting using the bundled QEMU scripts:
 
