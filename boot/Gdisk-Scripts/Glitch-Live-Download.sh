@@ -21,7 +21,9 @@ sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live
 
 clear
 
-cat ../Gdisk-Installer/gdisk.ascii | lolcat
+cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | lolcat
+
+echo ""
 
 echo "Glitch-Linux-v42 Live-Boot Downloaded!" 
 
