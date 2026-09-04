@@ -28,23 +28,14 @@ if exist "%FILEPATH%" (
     echo.
 )
 
-REM Download the ISO file using PowerShell
+REM Download the ISO file using wget
 echo Downloading Win-11-Nano-Installer-v8.iso
 echo.
 
-powershell -NoProfile -Command "& {
-    try {
-        $ProgressPreference = 'Continue'
-        Invoke-WebRequest -Uri '%URL%' -OutFile '%FILEPATH%' -UseBasicParsing
-    } catch {
-        Write-Host 'Error: Failed to download file' -ForegroundColor Red
-        Write-Host $_.Exception.Message -ForegroundColor Red
-        pause
-        exit 1
-    }
-}"
+wget -q --show-progress "%URL%"
 
 if errorlevel 1 (
+    echo.
     echo Download failed!
     pause
     exit /b 1
