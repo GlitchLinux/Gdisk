@@ -79,14 +79,14 @@ die()  { err "$*"; cleanup; exit 1; }
 header() {
     clear
     echo
-    echo "${CYN} ${BOLD}Gdisk v3.0${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
+    echo "${CYN} ${BOLD}Gdisk v3.1${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
     echo
 }
 
 banner() {
     clear
     echo
-    echo "${CYN} ${BOLD}Gdisk v3.0${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
+    echo "${CYN} ${BOLD}Gdisk v3.1${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
     echo
 }
 
