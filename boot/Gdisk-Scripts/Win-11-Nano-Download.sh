@@ -1,14 +1,13 @@
 #!/bin/bash
 clear
-cat ../Gdisk-Installer/gdisk.ascii | lolcat
+cat ../Gdisk-Installer/gdisk.ascii | /usr/games/lolcat
 echo ""
 cd .. && cd ..
 cd Gdisk
-sudo rm -rf Win-11-Nano-Installer-v8.iso
-echo "Downloading Win-11-Nano-Installer-v8.iso"
+sudo rm -rf WinPE-Teal-Installer-v1.4.iso
+echo "Downloading WinPE-Teal-Installer-v1.4.iso"
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-Installers/Win-11-Nano-Installer-v8.iso"
+sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-Installers/WinPE-Teal-Installer-v1.4.iso"
 clear
-echo "Win-11-Nano-Installer-v8.iso Downloaded successfully!" 
+echo "WinPE-Teal-Installer-v1.4.iso Downloaded successfully!"
 read -p ' '
-
