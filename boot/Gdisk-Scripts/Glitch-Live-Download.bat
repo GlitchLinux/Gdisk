@@ -23,9 +23,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v42 - initrd.img
+echo -----= Downloading Glitch-Linux Live v43 - initrd.img
 echo. 
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/initrd.img" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/initrd.img" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -34,9 +34,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo. 
-echo -----= Downloading Glitch-Linux Live v42 - vmlinuz
+echo -----= Downloading Glitch-Linux Live v43 - vmlinuz
 echo.
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/vmlinuz" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/vmlinuz" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -45,9 +45,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v42 - filesystem.squashfs
+echo -----= Downloading Glitch-Linux Live v43 - filesystem.squashfs
 echo. 
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/filesystem.squashfs" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/filesystem.squashfs" --no-check-certificate
 
 del wget.exe
 
