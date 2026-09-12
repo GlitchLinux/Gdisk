@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-cat ../Gdisk-Installer/gdisk.ascii | lolcat
+cat ../Gdisk-Installer/gdisk.ascii | /usr/games/lolcat
 echo ""
 cd .. && cd ..
 cd Gdisk
@@ -12,19 +12,19 @@ sudo rm -rf initrd.img
 sudo rm -rf vmlinuz
 sudo rm -rf filesystem.squashfs
 
-echo "Downloading Glitch-Linux v42 Live System"
+echo "Downloading Glitch-Linux v43 Live System"
 echo ""
 
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/initrd.img"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/vmlinuz"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v42/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/filesystem.squashfs"
 
 clear
 
-cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | lolcat
+cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | /usr/games/lolcat
 
 echo ""
 
-echo "Glitch-Linux-v42 Live-Boot Downloaded!" 
+echo "Glitch-Linux-v43 Live-Boot Downloaded!" 
 
 read -p ' '
