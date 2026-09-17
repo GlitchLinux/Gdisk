@@ -114,6 +114,7 @@ rm -f "$TMP"
 n_iso=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.iso" \) -type f 2>/dev/null | wc -l)
 n_img=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.img" \) -type f 2>/dev/null | wc -l)
 n_wim=$(find "$GDISK_DIR" -maxdepth 2 \( -iname "*.wim" \) -type f 2>/dev/null | wc -l)
-echo "[+] Wrote $OUT_AGFM"
-echo "[+] Wrote $OUT_ROOT"
-echo "[+] Entries: $n_iso ISO, $n_img IMG, $n_wim WIM (scanned /Gdisk and /Gdisk/*/)"
+
+echo "   [+] Wrote main to $OUT_ROOT"
+echo "   [+] Secondary menu $OUT_AGFM"
+echo "   [+] Entries: $n_iso ISO, $n_img IMG, $n_wim WIM"
