@@ -2,6 +2,8 @@
 
 clear
 
+sudo rm -f /tmp/grub4dos-generate
+
 cat > "/tmp/grub4dos-generate" << 'EOF'
 
 cat boot/Gdisk-Installer/gdisk.ascii | /usr/games/lolcat
@@ -23,7 +25,11 @@ echo  "  ~  SCRIPT WILL AUTO-EXIT IN 15 SECONDS  ~  " > /tmp/grub4dos-list
 
 cat /tmp/grub4dos-list | borderize
 
-sleep 15 && exit
+sleep 15 
+
+sudo rm -f /tmp/grub4dos-generate
+
+exit
 
 EOF
 
