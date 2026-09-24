@@ -791,9 +791,9 @@ op_create() {
 
     # layout selection
     header "Select Gdisk Filesystem Setup"
-    echo "  ${BOLD}1.${NC} ${HL}Pure FAT32${NC}       ~ single FAT32 partition (simplest, 4 GiB file cap)"
-    echo "  ${BOLD}2.${NC} ${HL}FAT32 + NTFS${NC}     ~ 32 MB Gdisk-EFI + Gdisk-Ntfs   (${GRN}recommended${NC}, supports VHD native boot)"
-    echo "  ${BOLD}3.${NC} ${HL}FAT32 + exFAT${NC}    ~ 32 MB Gdisk-EFI + Gdisk-exFAT  (cross-platform, no VHD native boot)"
+    echo "  ${BOLD}1.${NC} ${HL}Pure FAT32${NC}     ~ single FAT32 partition"
+    echo "  ${BOLD}2.${NC} ${HL}FAT32 + NTFS${NC}   ~ 32 MB Gdisk-EFI + Gdisk-Ntfs"
+    echo "  ${BOLD}3.${NC} ${HL}FAT32 + exFAT${NC}  ~ 32 MB Gdisk-EFI + Gdisk-exFAT"
     echo
     local L LAYOUT
     read -rp "  > " L
