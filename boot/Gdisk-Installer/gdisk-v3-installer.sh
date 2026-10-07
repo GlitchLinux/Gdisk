@@ -1,6 +1,6 @@
 #!/bin/bash
 # ====================================================================
-#  gdisk-v3-installer.sh  -  Gdisk v3.1 Download ~ Install ~ Repair
+#  gdisk-v3-installer.sh  -  Gdisk v3.2 Download ~ Install ~ Repair
 # --------------------------------------------------------------------
 #  Deploys the Gdisk v3 multiboot GRUB utility to a disk or partition
 #  of the user's choice, with selectable disk layout and FAT32 size,
@@ -42,7 +42,7 @@ export PATH="/usr/local/sbin:/usr/sbin:/sbin:$PATH"
 
 # -------------------- config --------------------
 GDISK_REPO="https://github.com/GlitchLinux/Gdisk.git"
-FAT_LABEL="Gdisk-v3"
+FAT_LABEL="Gdisk-v3.2"
 EFI_LABEL="Gdisk-EFI"
 NTFS_LABEL="Gdisk-Ntfs"
 EXFAT_LABEL="Gdisk-exFAT"
@@ -79,14 +79,14 @@ die()  { err "$*"; cleanup; exit 1; }
 header() {
     clear
     echo
-    echo "${CYN} ${BOLD}Gdisk v3.1${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
+    echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
     echo
 }
 
 banner() {
     clear
     echo
-    echo "${CYN} ${BOLD}Gdisk v3.1${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
+    echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
     echo
 }
 
@@ -947,7 +947,7 @@ finalize() {
     [ -n "$pfs" ] && info "FS     : ${HL}$pfs${NC}"
     info "Source : ${HL}$GDISK_REPO${NC}"
     echo
-    echo "  ${BRIGHT_GREEN}${BOLD}Gdisk v3.1 is ready.${NC} ${GRN}Boot the target in BIOS or UEFI mode.${NC}"
+    echo "  ${BRIGHT_GREEN}${BOLD}Gdisk v3.2 is ready.${NC} ${GRN}Boot the target in BIOS or UEFI mode.${NC}"
     echo
 }
 
