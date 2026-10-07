@@ -1,5 +1,5 @@
 # ╔════════════════════════════════════╗
-# ║ Gdisk v3.1 - Multibooter Utiltity  ║
+# ║ Gdisk v3.2 - Multibooter Utiltity  ║
 # ║ rEFInd ~ agFM ~ iPXE ~ ISO booter  ║
 # ║ Vhd ~ img ~ Vtoy ~ WinPe ~ Linux   ║
 # ║ Git: Github.com/GlitchLinux/Gdisk  ║
@@ -7,4 +7,4 @@
 
 [Autorun]
 icon=Gdisk.ico
-label=Gdisk v3.1
+label=Gdisk v3.2
