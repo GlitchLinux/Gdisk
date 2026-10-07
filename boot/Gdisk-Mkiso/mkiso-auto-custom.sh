@@ -236,7 +236,7 @@ sleep 3
 
 EOF
 
-############## MKISO AUTO CUSTOM - END ############## 
+########## MKISO AUTO CUSTOM - END ########## 
 
 sudo bash /tmp/.mkiso-auto-custom.sh
 sudo mv /Gdisk-v3.iso /tmp/Gdisk-v3.2.iso
