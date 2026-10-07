@@ -42,7 +42,7 @@ export PATH="/usr/local/sbin:/usr/sbin:/sbin:$PATH"
 
 # -------------------- config --------------------
 GDISK_REPO="https://github.com/GlitchLinux/Gdisk.git"
-FAT_LABEL="Gdisk-v3"
+FAT_LABEL="Gdisk v3"
 EFI_LABEL="Gdisk-EFI"
 NTFS_LABEL="Gdisk-Ntfs"
 EXFAT_LABEL="Gdisk-exFAT"
