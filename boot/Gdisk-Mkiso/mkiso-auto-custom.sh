@@ -7,7 +7,7 @@ sudo rm -f /tmp/.mkiso-auto-custom.sh
 cat > "/tmp/.mkiso-auto-custom.sh" << 'EOF'
 #!/bin/bash
 # ====================================================================
-#  mkiso-custom.sh  -  Gdisk v3.0 ISO Compiler
+#  mkiso-custom.sh  -  Gdisk .0 ISO Compiler
 # --------------------------------------------------------------------
 #  Builds a hybrid bootable ISO from a Gdisk source directory.
 #  Uses patched GRUB2 for both BIOS and UEFI boot.
@@ -38,7 +38,7 @@ set -euo pipefail
 export PATH="/usr/local/sbin:/usr/sbin:/sbin:$PATH"
 
 # -------------------- config --------------------
-ISO_LABEL="Gdisk-v3"
+ISO_LABEL="Gdisk-v3.2"
 # BUILD_DIR and EFI_MNT are set after output path is known (Step 2)
 
 # -------------------- styling --------------------
@@ -71,7 +71,7 @@ trap cleanup EXIT
 # -------------------- banner --------------------
 clear
 echo
-echo "${CYN} ${BOLD}Gdisk v3.0${NC} ❖${NC}${CYN} ${BOLD}ISO Compiler${NC}"
+echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}ISO Compiler${NC}"
 echo
 rule
 
