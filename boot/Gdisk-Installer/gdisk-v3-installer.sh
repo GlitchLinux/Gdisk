@@ -33,9 +33,11 @@
 #  Source: https://github.com/GlitchLinux  (GPLv3)
 # ====================================================================
 
-clear
-
 set -uo pipefail
+
+# Only clear the terminal in interactive mode. GUI mode captures stdout
+# as log lines - a clear would just print escape garbage.
+[ -t 1 ] && clear
 
 # Ensure system sbin dirs are on PATH (parted, mkfs.vfat, wipefs etc. live there)
 export PATH="/usr/local/sbin:/usr/sbin:/sbin:$PATH"
@@ -52,10 +54,67 @@ DL_DIR="/tmp/gdisk-v3-repo"
 MNT="/tmp/gdisk-v3-mnt-$$"
 MNT_DATA="/tmp/gdisk-v3-data-$$"
 
+# -------------------- GUI-mode args --------------------
+# Non-interactive mode driven by the GUI wrapper. All operation inputs
+# come in as flags; interactive prompts are suppressed; stdout emits
+# machine-readable prefixes (STEP:, MSG:, WARN:, ERR:, PROGRESS:n/m,
+# DONE:, FAIL:, PICK:...) that the GUI parses line-by-line.
+GUI_MODE=0
+GUI_OP=""              # create | update | repair
+GUI_DISK=""            # /dev/sdX for create
+GUI_PART=""            # /dev/sdX1 for update/repair
+GUI_LAYOUT=""          # fat32 | fat32_ntfs | fat32_exfat
+GUI_SIZESPEC=""        # MAX or NN[MG]
+GUI_REPAIR_TARGET=""   # bios | uefi | both
+GUI_AUTO_INSTALL_DEPS=0  # 1 = auto-answer Y to install prompts
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --gui)                GUI_MODE=1 ;;
+        --op=*)               GUI_OP="${1#*=}" ;;
+        --disk=*)             GUI_DISK="${1#*=}" ;;
+        --part=*)             GUI_PART="${1#*=}" ;;
+        --layout=*)           GUI_LAYOUT="${1#*=}" ;;
+        --size=*)             GUI_SIZESPEC="${1#*=}" ;;
+        --repair-target=*)    GUI_REPAIR_TARGET="${1#*=}" ;;
+        --auto-install-deps)  GUI_AUTO_INSTALL_DEPS=1 ;;
+        --help|-h)
+            cat <<HELP
+Usage (interactive): $0
+Usage (GUI mode):    $0 --gui --op=OP [options]
+
+Operations:
+    --op=create  --disk=/dev/sdX --layout={fat32|fat32_ntfs|fat32_exfat}
+                 --size={MAX|NNG|NNM}
+    --op=update  --part=/dev/sdX1
+    --op=repair  --part=/dev/sdX1 --repair-target={bios|uefi|both}
+
+Common:
+    --gui                   Non-interactive, machine-parseable output
+    --auto-install-deps     Auto-answer Y to install-missing-tool prompts
+
+Without --gui the installer runs its normal interactive menu.
+HELP
+            exit 0
+            ;;
+        *)  # unknown: let the rest of the script try to handle
+            break
+            ;;
+    esac
+    shift
+done
+
 # -------------------- styling --------------------
 RED=$'\e[0;31m'; GRN=$'\e[0;32m'; YLW=$'\e[1;33m'
 CYN=$'\e[0;36m'; BOLD=$'\e[1m'; DIM=$'\e[2m'; NC=$'\e[0m'
 MAGENTA=$'\033[38;5;198m'; BRIGHT_GREEN=$'\033[0;96m'
+
+# In GUI mode, suppress ANSI colour sequences so the log pane shows
+# clean text. The GUI will colour by prefix instead.
+if [ "$GUI_MODE" = "1" ]; then
+    RED=""; GRN=""; YLW=""; CYN=""; BOLD=""; DIM=""; NC=""
+    MAGENTA=""; BRIGHT_GREEN=""
+fi
 
 # semantic shortcuts
 HL="$MAGENTA"          # highlight: names, devices, partitions
@@ -64,31 +123,42 @@ RULE_COLOR="$DIM$CYN"
 
 # thin rule sized to the terminal (falls back to 60 cols)
 rule() {
+    [ "$GUI_MODE" = "1" ] && return 0
     local w; w="$(tput cols 2>/dev/null || echo 60)"
     [ "$w" -gt 70 ] && w=70
     printf "${RULE_COLOR}%*s${NC}\n" "$w" '' | tr ' ' '-'
 }
 
-msg()  { echo -e "${GRN}[+]${NC} $*"; }
-warn() { echo -e "${YLW}[!]${NC} $*"; }
-err()  { echo -e "${RED}[x]${NC} $*"; }
-info() { echo -e "${CYN}[i]${NC} $*"; }
-die()  { err "$*"; cleanup; exit 1; }
-
-# section header used at the top of every operation/picker screen
-header() {
-    clear
-    echo
-    echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
-    echo
-}
-
-banner() {
-    clear
-    echo
-    echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
-    echo
-}
+# In GUI mode every status line gets a machine-readable prefix so the
+# wrapper can tag it (colour, severity, step counter). In CLI mode we
+# emit the pretty coloured text unchanged.
+if [ "$GUI_MODE" = "1" ]; then
+    msg()  { echo "MSG: $*"; }
+    warn() { echo "WARN: $*"; }
+    err()  { echo "ERR: $*" >&2; }
+    info() { echo "INFO: $*"; }
+    die()  { echo "FAIL: $*" >&2; cleanup; exit 1; }
+    header() { echo "STEP: $*"; }
+    banner() { echo "STEP: Gdisk v3.2 - Download ~ Install ~ Repair"; }
+else
+    msg()  { echo -e "${GRN}[+]${NC} $*"; }
+    warn() { echo -e "${YLW}[!]${NC} $*"; }
+    err()  { echo -e "${RED}[x]${NC} $*"; }
+    info() { echo -e "${CYN}[i]${NC} $*"; }
+    die()  { err "$*"; cleanup; exit 1; }
+    header() {
+        clear
+        echo
+        echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
+        echo
+    }
+    banner() {
+        clear
+        echo
+        echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
+        echo
+    }
+fi
 
 # -------------------- cleanup --------------------
 cleanup() {
@@ -163,7 +233,17 @@ offer_install() {
     warn "${label} is not installed."
     info "Suggested install: ${HL}${pm} ${pkgs[*]}${NC}"
     local a
-    read -rp "  Install now? [${GRN}Y${NC}/${RED}n${NC}]: " a
+    if [ "$GUI_MODE" = "1" ]; then
+        if [ "$GUI_AUTO_INSTALL_DEPS" = "1" ]; then
+            a="Y"
+            info "GUI mode: auto-installing"
+        else
+            warn "GUI mode: --auto-install-deps not set, skipping install"
+            return 0
+        fi
+    else
+        read -rp "  Install now? [${GRN}Y${NC}/${RED}n${NC}]: " a
+    fi
     if [[ "$a" =~ ^[Nn]$ ]]; then
         return 0
     fi
@@ -362,8 +442,15 @@ check_boot_tools() {
             warn "Device will boot in ${BOLD}UEFI mode only${NC}${YLW}. BIOS/legacy boot will not work.${NC}"
             echo
             local a
-            read -rp "  Continue with UEFI-only install? [${GRN}y${NC}/${RED}N${NC}]: " a
-            [[ "$a" =~ ^[Yy]$ ]] || die "aborted - install grub-pc-bin and re-run"
+            if [ "$GUI_MODE" = "1" ]; then
+                # GUI needs to prompt the user explicitly - abort here and
+                # let the wrapper re-launch with the user's answer.
+                echo "PICK: uefi_only_continue"
+                die "GUI: user confirmation required for UEFI-only install"
+            else
+                read -rp "  Continue with UEFI-only install? [${GRN}y${NC}/${RED}N${NC}]: " a
+                [[ "$a" =~ ^[Yy]$ ]] || die "aborted - install grub-pc-bin and re-run"
+            fi
         fi
     fi
 
@@ -475,6 +562,13 @@ acquire_sources() {
 #  DEVICE / PARTITION PICKERS
 # ====================================================================
 pick_disk() {
+    if [ "$GUI_MODE" = "1" ]; then
+        [ -n "$GUI_DISK" ] || die "GUI mode: --disk is required for this operation"
+        [ -b "$GUI_DISK" ] || die "not a block device: $GUI_DISK"
+        REPLY_DISK="$GUI_DISK"
+        info "Target disk: $REPLY_DISK"
+        return 0
+    fi
     header "Select Target Disk"
     echo "  ${BOLD}Available disks:${NC}" >&2
     echo >&2
@@ -496,6 +590,13 @@ pick_disk() {
 }
 
 pick_partition() {
+    if [ "$GUI_MODE" = "1" ]; then
+        [ -n "$GUI_PART" ] || die "GUI mode: --part is required for this operation"
+        [ -b "$GUI_PART" ] || die "not a block device: $GUI_PART"
+        REPLY_PART="$GUI_PART"
+        info "Target partition: $REPLY_PART"
+        return 0
+    fi
     header "Select Target Partition"
     echo "  ${BOLD}Available partitions:${NC}" >&2
     echo >&2
@@ -520,6 +621,12 @@ resolve_parent() {
 
 confirm_destroy() {
     local tgt="$1"
+    if [ "$GUI_MODE" = "1" ]; then
+        # GUI already showed its own destructive-op confirmation dialog
+        # before invoking us. Just announce and proceed.
+        warn "ALL DATA on $tgt will be DESTROYED (confirmed via GUI)"
+        return 0
+    fi
     echo
     rule
     warn "ALL DATA on ${HL}${BOLD}$tgt${NC}${YLW} will be DESTROYED.${NC}"
@@ -646,22 +753,51 @@ make_layout() {
             partprobe "$disk"; sleep 1
 
             # The pre-built image occupies partition 1. Add partition 2
-            # after it for the data volume.
+            # starting at the next sector after p1 ends, so there is no
+            # unallocated gap between the two. The EFI image is a 20 MiB
+            # file whose internal FAT16 partition is only 19 MiB (1 MiB
+            # of MBR + alignment at the start), so a naive +1 MiB offset
+            # from efi_mib left a visible 1 MiB gap in GParted.
             msg "Creating hybrid layout: FAT16 EFI (pre-built, ${HL}${efi_mib} MiB${NC}) + ${data_fs^^} (${HL}${size_spec}${NC})"
-            local data_start_mib=$(( efi_mib + 1 ))    # +1 MiB align gap
 
-            if [ "$size_spec" = "MAX" ]; then
-                parted -s "$disk" mkpart primary ntfs "${data_start_mib}MiB" 100%
+            # Pull the real end of partition 1 from parted's machine
+            # output in sectors, convert to a byte-exact start for p2.
+            local p1_end_sec sec_size data_start_bytes data_start_sec
+            p1_end_sec="$(parted -s -m "$disk" unit s print 2>/dev/null \
+                | awk -F: '/^1:/ { s=$3; sub(/s$/,"",s); print s }')"
+            sec_size="$(parted -s -m "$disk" unit b print 2>/dev/null \
+                | awk -F: 'NR==2 { s=$4; sub(/B$/,"",s); print s }')"
+            [ -z "$sec_size" ] && sec_size=512
+            if [ -n "$p1_end_sec" ]; then
+                data_start_sec=$(( p1_end_sec + 1 ))
             else
-                local end_expr
+                # Fallback to old behaviour if parted output changes
+                warn "could not read p1 end from parted - using ${efi_mib}MiB offset"
+                data_start_sec=$(( efi_mib * 1024 * 1024 / sec_size ))
+            fi
+            local data_start_expr="${data_start_sec}s"
+
+            # --align none is critical here: parted's default "optimal"
+            # alignment snaps the start up to the next 1 MiB boundary,
+            # which produces the 1 MiB unallocated gap between p1 and p2
+            # visible in GParted. The sector-exact start we computed is
+            # already on a safe boundary (p1 was itself aligned by parted
+            # when the pre-built image was built), so align=none is both
+            # correct and does not hurt I/O.
+            if [ "$size_spec" = "MAX" ]; then
+                parted -s -a none "$disk" mkpart primary ntfs "$data_start_expr" 100%
+            else
+                local end_expr add_mib
                 if [[ "$size_spec" =~ ^([0-9]+)[Gg]$ ]]; then
-                    end_expr="$(( data_start_mib + ${BASH_REMATCH[1]} * 1024 ))MiB"
+                    add_mib=$(( ${BASH_REMATCH[1]} * 1024 ))
                 elif [[ "$size_spec" =~ ^([0-9]+)[Mm]$ ]]; then
-                    end_expr="$(( data_start_mib + ${BASH_REMATCH[1]} ))MiB"
+                    add_mib="${BASH_REMATCH[1]}"
                 else
                     die "invalid size: $size_spec"
                 fi
-                parted -s "$disk" mkpart primary ntfs "${data_start_mib}MiB" "$end_expr"
+                local end_sec=$(( data_start_sec + add_mib * 1024 * 1024 / sec_size - 1 ))
+                end_expr="${end_sec}s"
+                parted -s -a none "$disk" mkpart primary ntfs "$data_start_expr" "$end_expr"
             fi
             partprobe "$disk"; sleep 1
 
@@ -790,39 +926,61 @@ op_create() {
     confirm_destroy "$disk"
 
     # layout selection
-    header "Select Gdisk Filesystem Setup"
-    echo "  ${BOLD}1.${NC} ${HL}Pure FAT32${NC}       ~ single FAT32 partition (simplest, 4 GiB file cap)"
-    echo "  ${BOLD}2.${NC} ${HL}FAT32 + NTFS${NC}     ~ 32 MB Gdisk-EFI + Gdisk-Ntfs   (${GRN}recommended${NC}, supports VHD native boot)"
-    echo "  ${BOLD}3.${NC} ${HL}FAT32 + exFAT${NC}    ~ 32 MB Gdisk-EFI + Gdisk-exFAT  (cross-platform, no VHD native boot)"
-    echo
     local L LAYOUT
-    read -rp "  > " L
-    case "$L" in
-        1) LAYOUT="fat32" ;;
-        2) LAYOUT="fat32_ntfs"  ; check_datafs_tools ntfs ;;
-        3) LAYOUT="fat32_exfat" ; check_datafs_tools exfat ;;
-        *) die "invalid choice: $L" ;;
-    esac
+    if [ "$GUI_MODE" = "1" ]; then
+        LAYOUT="$GUI_LAYOUT"
+        case "$LAYOUT" in
+            fat32)        ;;
+            fat32_ntfs)   check_datafs_tools ntfs ;;
+            fat32_exfat)  check_datafs_tools exfat ;;
+            *) die "GUI mode: invalid --layout '$LAYOUT' (expected fat32|fat32_ntfs|fat32_exfat)" ;;
+        esac
+        info "Layout: $LAYOUT"
+    else
+        header "Select Gdisk Filesystem Setup"
+        echo "  ${BOLD}1.${NC} ${HL}Pure FAT32${NC}       ~ single FAT32 partition (simplest, 4 GiB file cap)"
+        echo "  ${BOLD}2.${NC} ${HL}FAT32 + NTFS${NC}     ~ 32 MB Gdisk-EFI + Gdisk-Ntfs   (${GRN}recommended${NC}, supports VHD native boot)"
+        echo "  ${BOLD}3.${NC} ${HL}FAT32 + exFAT${NC}    ~ 32 MB Gdisk-EFI + Gdisk-exFAT  (cross-platform, no VHD native boot)"
+        echo
+        read -rp "  > " L
+        case "$L" in
+            1) LAYOUT="fat32" ;;
+            2) LAYOUT="fat32_ntfs"  ; check_datafs_tools ntfs ;;
+            3) LAYOUT="fat32_exfat" ; check_datafs_tools exfat ;;
+            *) die "invalid choice: $L" ;;
+        esac
+    fi
 
     # size selection: applies to the (single|data) partition
-    header "Partition Size"
-    if [ "$LAYOUT" = "fat32" ]; then
-        echo "  ${BOLD}FAT32${NC} partition size:"
-    else
-        echo "  ${BOLD}Data${NC} partition size (the 32 MB ${HL}Gdisk-EFI${NC} partition is fixed):"
-    fi
-    echo "    ${BOLD}1.${NC} ${HL}Fill entire disk${NC} ~ recommended"
-    echo "    ${BOLD}2.${NC} ${HL}Custom size${NC}      ~ e.g. 8G, 16G, 4096M"
-    echo
     local s sz
-    read -rp "  > " s
-    if [ "$s" = "2" ]; then
-        echo
-        read -rp "  Enter size (e.g. ${HL}8G${NC}): " sz
-        [[ "$sz" =~ ^[0-9]+[MGmg]$ ]] || die "invalid size: $sz"
-        SIZESPEC="$sz"
+    if [ "$GUI_MODE" = "1" ]; then
+        [ -n "$GUI_SIZESPEC" ] || die "GUI mode: --size is required (MAX or NN[MG])"
+        if [ "$GUI_SIZESPEC" = "MAX" ]; then
+            SIZESPEC="MAX"
+        else
+            [[ "$GUI_SIZESPEC" =~ ^[0-9]+[MGmg]$ ]] || die "GUI mode: invalid --size '$GUI_SIZESPEC'"
+            SIZESPEC="$GUI_SIZESPEC"
+        fi
+        info "Partition size: $SIZESPEC"
     else
-        SIZESPEC="MAX"
+        header "Partition Size"
+        if [ "$LAYOUT" = "fat32" ]; then
+            echo "  ${BOLD}FAT32${NC} partition size:"
+        else
+            echo "  ${BOLD}Data${NC} partition size (the 32 MB ${HL}Gdisk-EFI${NC} partition is fixed):"
+        fi
+        echo "    ${BOLD}1.${NC} ${HL}Fill entire disk${NC} ~ recommended"
+        echo "    ${BOLD}2.${NC} ${HL}Custom size${NC}      ~ e.g. 8G, 16G, 4096M"
+        echo
+        read -rp "  > " s
+        if [ "$s" = "2" ]; then
+            echo
+            read -rp "  Enter size (e.g. ${HL}8G${NC}): " sz
+            [[ "$sz" =~ ^[0-9]+[MGmg]$ ]] || die "invalid size: $sz"
+            SIZESPEC="$sz"
+        else
+            SIZESPEC="MAX"
+        fi
     fi
 
     header "Building Gdisk Device"
@@ -888,8 +1046,12 @@ op_update() {
     echo
     warn "Existing files on ${HL}${BOLD}$part${NC}${YLW} are kept; Gdisk files will be added/overwritten.${NC}"
     echo
-    read -rp "  Proceed? [${GRN}y${NC}/${RED}N${NC}]: " a
-    [[ "$a" =~ ^[Yy]$ ]] || die "aborted"
+    if [ "$GUI_MODE" = "1" ]; then
+        info "GUI mode: proceeding (confirmation handled by wrapper)"
+    else
+        read -rp "  Proceed? [${GRN}y${NC}/${RED}N${NC}]: " a
+        [[ "$a" =~ ^[Yy]$ ]] || die "aborted"
+    fi
 
     header "Updating Gdisk"
     unmount_all "$PARENT"
@@ -910,12 +1072,23 @@ op_repair() {
     local part="$REPLY_PART"
     resolve_parent "$part"
 
-    header "Repair Target"
-    echo "  ${BOLD}1.${NC} ${HL}BIOS${NC} ~ MBR + core.img"
-    echo "  ${BOLD}2.${NC} ${HL}UEFI${NC} ~ BOOTX64.EFI + modules"
-    echo "  ${BOLD}3.${NC} ${HL}Both${NC} ~ BIOS + UEFI"
-    echo
-    local r; read -rp "  > " r
+    local r
+    if [ "$GUI_MODE" = "1" ]; then
+        case "$GUI_REPAIR_TARGET" in
+            bios) r=1 ;;
+            uefi) r=2 ;;
+            both) r=3 ;;
+            *) die "GUI mode: invalid --repair-target '$GUI_REPAIR_TARGET' (expected bios|uefi|both)" ;;
+        esac
+        info "Repair target: $GUI_REPAIR_TARGET"
+    else
+        header "Repair Target"
+        echo "  ${BOLD}1.${NC} ${HL}BIOS${NC} ~ MBR + core.img"
+        echo "  ${BOLD}2.${NC} ${HL}UEFI${NC} ~ BOOTX64.EFI + modules"
+        echo "  ${BOLD}3.${NC} ${HL}Both${NC} ~ BIOS + UEFI"
+        echo
+        read -rp "  > " r
+    fi
 
     header "Repairing Gdisk"
     unmount_all "$PARENT"
@@ -949,11 +1122,24 @@ finalize() {
     echo
     echo "  ${BRIGHT_GREEN}${BOLD}Gdisk v3.1 is ready.${NC} ${GRN}Boot the target in BIOS or UEFI mode.${NC}"
     echo
+    if [ "$GUI_MODE" = "1" ]; then
+        echo "DONE: Gdisk v3.1 is ready on $disk ($part)"
+    fi
 }
 
 # ====================================================================
 #  MENU
 # ====================================================================
+if [ "$GUI_MODE" = "1" ]; then
+    case "$GUI_OP" in
+        create) op_create ;;
+        update) op_update ;;
+        repair) op_repair ;;
+        *) die "GUI mode: --op must be create|update|repair (got '$GUI_OP')" ;;
+    esac
+    exit 0
+fi
+
 banner
 echo "  ${BOLD}Select Gdisk Operation [1-3]:${NC}"
 echo
