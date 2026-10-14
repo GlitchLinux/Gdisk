@@ -77,6 +77,9 @@ Gdisk/
 
 ---
 
+<img width="902" height="755" alt="gdisk-gui-installer" src="https://github.com/user-attachments/assets/9c380aac-ae52-4770-b055-aa717cec7c72" />
+
+
 ## Installing Gdisk
 
 There are three ways to install Gdisk v3.0 onto a target USB drive or disk.
