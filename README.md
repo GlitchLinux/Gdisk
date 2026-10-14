@@ -168,7 +168,7 @@ Operations:
 
 | Image | Format | Description |
 |---|---|---|
-| [Gdisk-v3.2-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-v3.2-iPXE.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-ISO-v3.2-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-iPXE.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
 | [Gdisk-v3-Installer-iPXE.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
 
 For situations where you don't have a working Linux or Windows environment available, or you want to install Gdisk to the same disk you're booting from.
@@ -183,7 +183,7 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
 2. Launch in Virtual-Machine OR: 
 3. Flash it to a USB stick using dd, Rufus, Etcher or similar:
    ```bash
-   sudo dd if=Gdisk-v3.2-iPXE.iso of=/dev/sdX bs=4M status=progress
+   sudo dd if=Gdisk-ISO-v3.2-iPXE.iso of=/dev/sdX bs=4M status=progress
    ```
 4. Boot the target machine from the USB stick (BIOS or UEFI)
 5. The system network-boots a minimal Debian live environment into RAM
