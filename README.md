@@ -13,6 +13,8 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
 `.img` loopback booting in **UEFI** mode, and the boot chain installs a patched a1ive
 `core.img` for hybrid **BIOS + UEFI** support from a single device.
 
+> **Latest release: [v3.2](https://github.com/GlitchLinux/Gdisk/releases/tag/Gdisk-v3.2)** - the whole utility has been updated and optimized, and a new portable **Linux GUI installer** is available.
+
 ---
 
 ## Features
@@ -33,7 +35,10 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
 - **vDiskChain** - auto-scans all partitions for `.vtoy` disk images and chainloads them
 - **Live-system entries** - direct boot menus for Glitch Linux, Bonsai and other live distros
 - **Bundled loaders** - rEFInd, agFM (grubfm) and an iPXE network-boot framework under `EFI/`
-- **Self-contained installers** - the Linux and Windows installers ship inside the device
+- **Flexible installers** - portable Linux GUI installer, Linux CLI installer, Windows
+  installer and iPXE network install, with selectable disk layouts
+  (FAT32, FAT32 + NTFS, FAT32 + exFAT)
+- **Self-contained installers** - the CLI and Windows installers also ship inside the device
   itself (`boot/Gdisk-Installer/`)
 
 ---
@@ -60,7 +65,7 @@ Gdisk/
 │   │   ├── ntloader/         ntloader v3.0.7 + initrd.cpio (NT6+ VHD/VHDX/WIM)
 │   │   ├── agFM/  theme/  images/  wimboot/  vdiskchain/   supporting assets
 │   │   └── font.pf2  grubenv  system.cfg
-│   ├── Gdisk-Installer/      shipped installers: gdisk-v3-installer.sh, gdisk-v3-installer.exe,
+│   ├── Gdisk-Installer/      shipped installers: gdisk-v3-installer.sh, gdisk-v3-installer.exe
 │   └── Gdisk-Mkiso/          ISO-build scripts: gdisk-mkiso.sh
 ├── EFI/
 │   ├── BOOT/BOOTX64.EFI      patched grubfm UEFI boot binary
@@ -82,25 +87,55 @@ Gdisk/
 
 ## Installing Gdisk
 
-There are three ways to install Gdisk v3.0 onto a target USB drive or disk.
+There are four ways to install Gdisk onto a target USB drive or disk. The Linux GUI installer is the recommended starting point.
 
-### Method 1 - Linux Installer (gdisk-v3-installer.sh)
+### Method 1 - Linux GUI Installer (gdisk-v3.2-gui-linux)
 
 | Image | Format | Description |
 |---|---|---|
-| [gdisk-v3-installer.sh](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer.sh) | Linux Bash Script | Interactive CLI Installer |
+| [gdisk-v3.2-gui-linux](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-gui-linux) | Portable Linux Binary | GUI Installer |
 
-A CLI installer that runs on any Linux system with GRUB2 tools available. Downloads the latest Gdisk files from GitHub and deploys them to the target device.
+A graphical installer for Linux. It is a single portable binary, so there is nothing to install and no dependencies to set up first. Make it executable and launch it with `sudo`:
 
-**Requirements:** Linux with `git`, `parted`, `mkfs.vfat`, `grub-bios-setup` (from `grub-pc-bin`)
+```bash
+chmod +x gdisk-v3.2-gui-linux
+sudo ./gdisk-v3.2-gui-linux
+```
+
+Root is required because the installer partitions, formats and writes boot code to the target disk. It drives the same **Create**, **Update** and **Repair** operations and the same disk layouts as the CLI installer below.
+
+### Method 2 - Linux CLI Installer (gdisk-v3-installer.sh)
+
+| Image | Format | Description |
+|---|---|---|
+| [gdisk-v3-installer.sh](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3-installer.sh) | Linux Bash Script | Interactive CLI Installer |
+
+An interactive CLI installer that runs on any Linux system with GRUB2 tools available. Downloads the latest Gdisk files from GitHub and deploys them to the target device. Must be run as root:
+
+```bash
+chmod +x gdisk-v3-installer.sh
+sudo ./gdisk-v3-installer.sh
+```
+
+**Requirements:** Linux with `git`, `parted`, `mkfs.vfat`, `rsync`, `grub-bios-setup` (from `grub-pc-bin`). Missing tools are detected and the installer offers to install them with your package manager (apt, dnf, yum, pacman or zypper). The NTFS and exFAT layouts additionally need `mkfs.ntfs` (`ntfs-3g`) or `mkfs.exfat`.
 
 Three operations are available:
 
-- **Create** - Wipe a whole disk, create a new MBR partition table with a FAT32 partition (full disk or custom size), deploy all Gdisk files, and install the BIOS + UEFI boot chain.
+- **Create** - Wipe a whole disk, create a new MBR partition table with the layout of your choice (see below), deploy all Gdisk files, and install the BIOS + UEFI boot chain.
 - **Update** - Install or refresh Gdisk onto an existing partition. Existing user data is preserved, Gdisk boot files are added/overwritten.
 - **Repair** - Reinstall the MBR core.img and/or UEFI BOOTX64.EFI on an existing Gdisk device without touching user data. Useful when the boot chain is broken but your ISOs and other files are fine.
 
-### Method 2 - Windows Installer (gdisk-v3-installer.exe)
+**Disk layouts for Create:**
+
+| Layout | Partitions |
+|---|---|
+| Pure FAT32 | Single FAT32 partition across the whole disk |
+| FAT32 + NTFS | 32 MB `Gdisk-EFI` FAT32 partition + `Gdisk-Ntfs` data partition (custom size or rest of disk) |
+| FAT32 + exFAT | 32 MB `Gdisk-EFI` FAT32 partition + `Gdisk-exFAT` data partition (custom size or rest of disk) |
+
+In the two hybrid layouts the small FAT32 partition holds the GRUB modules and `BOOTX64.EFI`, while the data partition holds your boot images (ISO / IMG / WIM / VHD). Use **FAT32 + NTFS** if you want native VHD / VHDX boot, which requires NTFS. Both hybrid layouts also avoid the 4 GiB single-file limit of FAT32.
+
+### Method 3 - Windows Installer (gdisk-v3-installer.exe)
 
 | Image | Format | Description |
 |---|---|---|
@@ -117,11 +152,11 @@ Operations:
 
 **Note:** Run as Administrator. In WinPE, the installer works out of the box since WinPE runs with full privileges.
 
-### Method 3 - iPXE Network Boot (no local media needed)
+### Method 4 - iPXE Network Boot (no local media needed)
 
 | Image | Format | Description |
 |---|---|---|
-| [Gdisk-v3-Installer-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-hybrid.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-v3.2-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-v3.2-iPXE.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
 | [Gdisk-v3-Installer-iPXE.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
 
 For situations where you don't have a working Linux or Windows environment available, or you want to install Gdisk to the same disk you're booting from.
@@ -136,7 +171,7 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
 2. Launch in Virtual-Machine OR: 
 3. Flash it to a USB stick using dd, Rufus, Etcher or similar:
    ```bash
-   sudo dd if=gdisk-v3-installer-ipxe-hybrid.iso of=/dev/sdX bs=4M status=progress
+   sudo dd if=Gdisk-v3.2-iPXE.iso of=/dev/sdX bs=4M status=progress
    ```
 4. Boot the target machine from the USB stick (BIOS or UEFI)
 5. The system network-boots a minimal Debian live environment into RAM
@@ -177,7 +212,8 @@ Native boot uses the Windows Boot Manager, so two host-volume constraints apply:
 - **The VHD should live on an NTFS volume.** `bootmgr` attaches the VHD with its own
   filesystem drivers plus `bootvhd.dll`, and does not mount VHDs from FAT32 or exFAT.
 - **FAT32 caps single files at 4 GiB.** Gdisk's own partition is FAT32, so anything
-  larger than 4 GiB has to sit on a separate NTFS partition.
+  larger than 4 GiB has to sit on a separate NTFS partition. The installer's
+  **FAT32 + NTFS** layout provides this out of the box.
 
 ### Why ntloader is preferred for BIOS
 
