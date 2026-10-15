@@ -8,7 +8,7 @@ cd ..
 
 mkdir glitch-live
 
-copy boot\Gdisk-Installer\wget.exe glitch-live\
+copy %WinDir%\System32\wget.exe glitch-live\
 
 cd glitch-live
 
