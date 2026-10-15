@@ -1,7 +1,8 @@
 #!/bin/bash
 
 clear
-cat ../Gdisk-Installer/gdisk.ascii | /usr/games/lolcat
+which lolcat > /tmp/.lolcat && sudo chmod +x /tmp/.lolcat
+cat ../Gdisk-Installer/gdisk.ascii | /tmp/.lolcat
 echo ""
 cd .. && cd ..
 cd Gdisk
@@ -12,19 +13,23 @@ sudo rm -rf initrd.img
 sudo rm -rf vmlinuz
 sudo rm -rf filesystem.squashfs
 
-echo "Downloading Glitch-Linux v43 Live System"
+echo "Downloading Glitch-Linux v45 Live System"
 echo ""
 
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/initrd.img"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/vmlinuz"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v43/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/filesystem.squashfs"
+
+echo "#╭──────────────────╮" > glitch.info
+echo "#│ Glitch-Linux-v45 │" >> glitch.info
+echo "#╰──────────────────╯" >> glitch.info
 
 clear
 
-cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | /usr/games/lolcat
+cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | /tmp/.lolcat
 
 echo ""
 
-echo "Glitch-Linux-v43 Live-Boot Downloaded!" 
+echo "Glitch-Linux-v45 Live-Boot Downloaded!" 
 
 read -p ' '
