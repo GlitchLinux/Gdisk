@@ -2,7 +2,9 @@
 
 clear
 which lolcat > /tmp/.lolcat && sudo chmod +x /tmp/.lolcat
-cat ../Gdisk-Installer/gdisk.ascii | /tmp/.lolcat
+cp ../Gdisk-Installer/gdisk.ascii /tmp/.gdisk.ascii
+cat /tmp/.gdisk.ascii | /tmp/.lolcat
+
 echo ""
 cd .. && cd ..
 cd Gdisk
@@ -26,7 +28,7 @@ echo "#╰──────────────────╯" >> glitch.i
 
 clear
 
-cd .. && cd boot/Gdisk-Installer && cat gdisk.ascii | /tmp/.lolcat
+cat /tmp/.gdisk.ascii | /tmp/.lolcat
 
 echo ""
 
