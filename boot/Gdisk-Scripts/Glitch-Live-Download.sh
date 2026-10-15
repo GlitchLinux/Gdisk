@@ -15,23 +15,25 @@ sudo rm -rf initrd.img
 sudo rm -rf vmlinuz
 sudo rm -rf filesystem.squashfs
 
-echo "Downloading Glitch-Linux v45 Live System"
+echo "Downloading Glitch-Linux Live System"
 echo ""
 
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/initrd.img"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/vmlinuz"
-sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/initrd.img"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/vmlinuz"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/filesystem.squashfs"
+sudo wget -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/glitch.info"
 
-echo "#╭──────────────────╮" > glitch.info
-echo "#│ Glitch-Linux-v45 │" >> glitch.info
-echo "#╰──────────────────╯" >> glitch.info
+cat glitch.info > /tmp/.glitch.info
 
 clear
 
 cat /tmp/.gdisk.ascii | /tmp/.lolcat
 
+echo "Release version:"
+echo ""
+cat /tmp/.glitch.info && rm /tmp/.glitch.info
 echo ""
 
-echo "Glitch-Linux-v45 Live-Boot Downloaded!" 
+echo "Glitch-Linux Live Downloaded!" 
 
 read -p ' '
