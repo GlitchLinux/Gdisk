@@ -15,6 +15,7 @@ cd glitch-live
 del initrd.img >NUL
 del vmlinuz >NUL
 del filesystem.squashfs >NUL
+del glitch.info >NUL
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -34,9 +35,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo. 
-echo -----= Downloading Glitch-Linux Live v45 - vmlinuz
+echo -----= Downloading Glitch-Linux Live - vmlinuz
 echo.
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/vmlinuz" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/vmlinuz" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -45,9 +46,10 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v45 - filesystem.squashfs
+echo -----= Downloading Glitch-Linux Live - filesystem.squashfs
 echo. 
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v45/live/filesystem.squashfs" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/filesystem.squashfs" --no-check-certificate
+wget.exe -q "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/glitch.info" --no-check-certificate
 
 del wget.exe
 
@@ -60,5 +62,7 @@ echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
 echo -----= Glitch Linux Live Sucessfully Downloaded!
-echo.
+echo 
+echo Glitch Linux Version: 
+type glitch.info
 pause
