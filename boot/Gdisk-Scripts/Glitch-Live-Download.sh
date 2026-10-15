@@ -7,7 +7,7 @@ cat /tmp/.gdisk.ascii | /tmp/.lolcat
 
 echo ""
 cd .. && cd ..
-cd Gdisk
+cd Gdisk && cd ..
 sudo mkdir -p glitch-live
 cd glitch-live
 
