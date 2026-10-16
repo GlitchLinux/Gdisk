@@ -24,9 +24,9 @@ echo    dMP MMP'  dMP dMP   dMP    VMMMb    dMMMM'
 echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF 
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
-echo -----= Downloading Glitch-Linux Live v45 - initrd.img
+echo -----= Downloading Glitch-Linux Live - initrd.img
 echo. 
-wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-v46/live/initrd.img" --no-check-certificate
+wget.exe -q --show-progress "https://glitchlinux.wtf/ipxe/Glitch-Linux-Live/live/initrd.img" --no-check-certificate
 cls
 echo.
 echo      .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP
@@ -62,7 +62,5 @@ echo   dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP'AMF
 echo   VMMMP'   dMMMMP'   dMP    VMMMP'   dMP dMP 
 echo.
 echo -----= Glitch Linux Live Sucessfully Downloaded!
-echo 
-echo Glitch Linux Version: 
-type glitch.info
+echo.
 pause
