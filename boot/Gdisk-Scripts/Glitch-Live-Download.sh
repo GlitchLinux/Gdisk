@@ -14,6 +14,7 @@ cd glitch-live
 sudo rm -rf initrd.img
 sudo rm -rf vmlinuz
 sudo rm -rf filesystem.squashfs
+sudo rm -rf glitch.info
 
 echo "Downloading Glitch-Linux Live System"
 echo ""
