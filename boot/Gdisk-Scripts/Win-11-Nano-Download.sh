@@ -5,10 +5,12 @@ cat ../Gdisk-Installer/gdisk.ascii | /tmp/.lolcat
 echo ""
 cd .. && cd ..
 cd Gdisk
-sudo rm -rf WinPE-Teal-Installer-v1.5.iso
-echo "Downloading WinPE-Teal-Installer-v1.5.iso"
+sudo rm -rf WinPE-Teal-Installer-v1.6.iso
+echo "Downloading WinPE-Teal-Installer-v1.6.iso"
 echo ""
-sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-Installers/WinPE-Teal-Installer-v1.5.iso"
+sudo wget -q --show-progress "https://glitchlinux.wtf/FILES/Windows-Installers/WinPE-Teal-Installer-v1.6.iso"
 clear
-echo "WinPE-Teal-Installer-v1.5.iso Downloaded successfully!"
+echo "WinPE-Teal-Installer-v1.6.iso Downloaded successfully!"
+cd ..
+xterm -e 'bash boot/Gdisk-Scripts/grub4dos.sh' &
 read -p ' '
