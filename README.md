@@ -94,9 +94,6 @@ Gdisk/
 
 ---
 
-<img width="902" height="755" alt="gdisk-gui-installer" src="https://github.com/user-attachments/assets/9c380aac-ae52-4770-b055-aa717cec7c72" />
-
-
 ## Installing Gdisk
 
 There are four ways to install Gdisk onto a target USB drive or disk. The Linux GUI installer is the recommended starting point.
@@ -106,6 +103,8 @@ There are four ways to install Gdisk onto a target USB drive or disk. The Linux 
 | Image | Format | Description |
 |---|---|---|
 | [gdisk-v3.2-gui-linux](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-gui-linux) | Portable Linux Binary | GUI Installer |
+
+<img width="902" height="755" alt="gdisk-gui-installer" src="https://github.com/user-attachments/assets/9c380aac-ae52-4770-b055-aa717cec7c72" />
 
 A graphical installer for Linux. It is a single portable binary, so there is nothing to install and no dependencies to set up first. Make it executable and launch it with `sudo`:
 
