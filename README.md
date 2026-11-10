@@ -1,6 +1,6 @@
 ## Gdisk -  Grub2  Device  Image  System  Kit
 
-<img width="828" height="259" alt="refind-banner" src="https://github.com/user-attachments/assets/db33ab6e-5f35-4add-8851-cbaec8270be1" />
+<img width="828" height="259" alt="refind-banner" src="https://github.com/user-attachments/assets/81eb8e99-22ad-4f7a-8405-035605d3fc89" />
 
 ---
 
