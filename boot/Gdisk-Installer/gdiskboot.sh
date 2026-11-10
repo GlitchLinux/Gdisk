@@ -484,5 +484,5 @@ rebuild_initramfs
 
 echo ""
 ok "gdiskboot v${GDISKBOOT_VERSION} installed!"
-info "Devices after boot: /dev/gdisk0, /dev/gdisk0p1..N"
+info "Devices after boot: /dev/gdisk0, /dev/gdisk0p1.."
 echo ""
