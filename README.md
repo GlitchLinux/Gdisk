@@ -2,6 +2,9 @@
 
 <img width="853" height="284" alt="banner-top" src="https://github.com/user-attachments/assets/abec78e9-5b0e-42d8-9a23-2e92b71e59e4" />
 
+<img width="762" height="259" alt="refind-banner" src="https://github.com/user-attachments/assets/c1d0356a-c5e1-4322-8b55-0e5391dfe733" />
+
+
 ---
 
 Gdisk is a bootable multiboot USB manager built on **pure GRUB2 scripting** - on the
