@@ -1153,7 +1153,7 @@ echo
 echo "  ${BOLD}1.${NC} ${MAGENTA}Create Gdisk${NC} ~ Make a new Gdisk Device"
 echo "  ${BOLD}2.${NC} ${MAGENTA}Update Gdisk${NC} ~ Update or Install on existing partition."
 echo "  ${BOLD}3.${NC} ${MAGENTA}Repair Gdisk${NC} ~ Fix MBR & UEFI Boot on existing Gdisk device."
-echo "  ${BOLD}4.${NC} ${MAGENTA}Setup .Gdisk${NC} ~ Prepares a Linux system inside a .gdisk virtual disk."
+echo "  ${BOLD}4.${NC} ${MAGENTA}.Gdisk Setup${NC} ~ Prepares Linux system inside a .gdisk virtual disk."
 echo
 read -rp "  > " CHOICE
 echo
@@ -1162,6 +1162,6 @@ case "$CHOICE" in
     1) op_create ;;
     2) op_update ;;
     3) op_repair ;;
-    3) op_setup ;;
+    4) op_setup ;;
     *) die "invalid choice: $CHOICE" ;;
 esac
