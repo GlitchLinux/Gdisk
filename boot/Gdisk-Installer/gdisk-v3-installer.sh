@@ -1610,7 +1610,6 @@ rebuild_initramfs() {
 # ════════════════════════════════════════════════════════════════
 clear
 echo ""
-echo "${CYN} ${BOLD}Gdiskboot v0.3${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
 echo ""
 
 case "${1}" in
@@ -1646,8 +1645,9 @@ echo ""
 
 GDISKBOOT
 clear
-sudo bash /tmp/.gdiskboot.sh
-sudo rm /tmp/.gdiskboot.sh
+header
+sudo bash -f /tmp/.gdiskboot.sh
+sudo rm -f /tmp/.gdiskboot.sh
 read -p ' '
 wget -O /tmp/gdisk-installer -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdisk-v3-installer.sh
 clear 
