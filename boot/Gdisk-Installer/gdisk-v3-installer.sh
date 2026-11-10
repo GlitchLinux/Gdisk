@@ -22,7 +22,8 @@
 #                 (keeps the partition, refreshes files + boot chain).
 #    3. Repair  - reinstall MBR core.img and/or UEFI BOOTX64.EFI on an
 #                 existing Gdisk device without touching user data.
-#
+#    4. Setup  -  Prepares a Linux system inside a .gdisk virtual disk."
+#                 
 #  Boot chain is installed from the PREBUILT patched core
 #  (core-patched.img) via grub-bios-setup - never regenerated, so the
 #  custom modules survive. Mirrors Grub2-Patch.sh patch_bios() logic.
@@ -88,7 +89,6 @@ Operations:
                  --size={MAX|NNG|NNM}
     --op=update  --part=/dev/sdX1
     --op=repair  --part=/dev/sdX1 --repair-target={bios|uefi|both}
-    --op=setup   wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh && clear && sudo bash /tmp/.gdiskboot.sh && sudo rm -f /tmp/.gdiskboot.sh
 
 Common:
     --gui                   Non-interactive, machine-parseable output
@@ -1137,10 +1137,61 @@ op_setup() {
 
 GDISKBOOT_VERSION="0.3"
 
-info()  { echo -e "${CYAN}[gdiskboot]${NC} $*"; }
-ok()    { echo -e "${GREEN}[gdiskboot]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[gdiskboot]${NC} $*"; }
-err()   { echo -e "${RED}[gdiskboot]${NC} $*" >&2; }
+# -------------------- styling --------------------
+RED=$'\e[0;31m'; GRN=$'\e[0;32m'; YLW=$'\e[1;33m'
+CYN=$'\e[0;36m'; BOLD=$'\e[1m'; DIM=$'\e[2m'; NC=$'\e[0m'
+MAGENTA=$'\033[38;5;198m'; BRIGHT_GREEN=$'\033[0;96m'
+
+# In GUI mode, suppress ANSI colour sequences so the log pane shows
+# clean text. The GUI will colour by prefix instead.
+if [ "$GUI_MODE" = "1" ]; then
+    RED=""; GRN=""; YLW=""; CYN=""; BOLD=""; DIM=""; NC=""
+    MAGENTA=""; BRIGHT_GREEN=""
+fi
+
+# semantic shortcuts
+HL="$MAGENTA"          # highlight: names, devices, partitions
+ACCENT="$CYN"          # section accent
+RULE_COLOR="$DIM$CYN"
+
+# thin rule sized to the terminal (falls back to 60 cols)
+rule() {
+    [ "$GUI_MODE" = "1" ] && return 0
+    local w; w="$(tput cols 2>/dev/null || echo 60)"
+    [ "$w" -gt 70 ] && w=70
+    printf "${RULE_COLOR}%*s${NC}\n" "$w" '' | tr ' ' '-'
+}
+
+# In GUI mode every status line gets a machine-readable prefix so the
+# wrapper can tag it (colour, severity, step counter). In CLI mode we
+# emit the pretty coloured text unchanged.
+if [ "$GUI_MODE" = "1" ]; then
+    msg()  { echo "MSG: $*"; }
+    warn() { echo "WARN: $*"; }
+    err()  { echo "ERR: $*" >&2; }
+    info() { echo "INFO: $*"; }
+    die()  { echo "FAIL: $*" >&2; cleanup; exit 1; }
+    header() { echo "STEP: $*"; }
+    banner() { echo "STEP: Gdisk v3.2 - Download ~ Install ~ Repair"; }
+else
+    msg()  { echo -e "${GRN}[+]${NC} $*"; }
+    warn() { echo -e "${YLW}[!]${NC} $*"; }
+    err()  { echo -e "${RED}[x]${NC} $*"; }
+    info() { echo -e "${CYN}[i]${NC} $*"; }
+    die()  { err "$*"; cleanup; exit 1; }
+    header() {
+        clear
+        echo
+        echo "${CYN} ${BOLD}Gdiskboot v0.3${NC} ❖${NC}${CYN} ${BOLD}$*${NC}"
+        echo
+    }
+    banner() {
+        clear
+        echo
+        echo "${CYN} ${BOLD}Gdisk v3.2${NC} ❖${NC}${CYN} ${BOLD}Download ~ Install ~ Repair ${NC}"
+        echo
+    }
+fi
 
 if [ "$(id -u)" -ne 0 ]; then
     err "Please run this script as root or with sudo"
