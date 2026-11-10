@@ -1107,8 +1107,24 @@ op_repair() {
 op_setup() {
     banner
     info "SETUP - Prepares a Linux system inside a .gdisk virtual disk."
-    wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh && clear && sudo bash /tmp/.gdiskboot.sh && sudo rm -f /tmp/.gdiskboot.sh
-    finalize "$PARENT" "$part"
+
+    # Silently install kpartx if missing - no prompt, no offer.
+    if ! have kpartx; then
+        local pm; pm="$(detect_pm)" \
+            || die "no supported package manager to install kpartx"
+        pm_refresh
+        msg "Installing kpartx..."
+        # shellcheck disable=SC2086
+        $pm kpartx >/dev/null 2>&1 \
+            || die "install of kpartx failed"
+        have kpartx || die "kpartx still not available after install"
+    fi
+
+    wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh \
+        || die "failed to download gdiskboot.sh"
+    clear
+    bash /tmp/.gdiskboot.sh || { rm -f /tmp/.gdiskboot.sh; die "gdiskboot.sh failed"; }
+    rm -f /tmp/.gdiskboot.sh
 }
 
 finalize() {
