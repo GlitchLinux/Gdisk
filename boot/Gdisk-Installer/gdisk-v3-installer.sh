@@ -1105,6 +1105,7 @@ op_repair() {
 }
 
 op_setup() {
+    banner
     info "SETUP - Prepares a Linux system inside a .gdisk virtual disk."
     wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh && clear && sudo bash /tmp/.gdiskboot.sh && sudo rm -f /tmp/.gdiskboot.sh
     finalize "$PARENT" "$part"
@@ -1148,7 +1149,7 @@ if [ "$GUI_MODE" = "1" ]; then
 fi
 
 banner
-echo "  ${BOLD}Select Gdisk Operation [1-3]:${NC}"
+echo "  ${BOLD}Select Gdisk Operation [1-4]:${NC}"
 echo
 echo "  ${BOLD}1.${NC} ${MAGENTA}Create Gdisk${NC} ~ Make a new Gdisk Device"
 echo "  ${BOLD}2.${NC} ${MAGENTA}Update Gdisk${NC} ~ Update or Install on existing partition."
