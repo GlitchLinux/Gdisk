@@ -88,6 +88,7 @@ Operations:
                  --size={MAX|NNG|NNM}
     --op=update  --part=/dev/sdX1
     --op=repair  --part=/dev/sdX1 --repair-target={bios|uefi|both}
+    --op=setup   wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh && clear && sudo bash /tmp/.gdiskboot.sh && sudo rm -f /tmp/.gdiskboot.sh
 
 Common:
     --gui                   Non-interactive, machine-parseable output
@@ -1103,6 +1104,12 @@ op_repair() {
     finalize "$PARENT" "$part"
 }
 
+op_setup() {
+    info "SETUP - Prepares a Linux system inside a .gdisk virtual disk."
+    wget -O /tmp/.gdiskboot.sh -q https://raw.githubusercontent.com/GlitchLinux/Gdisk/refs/heads/main/boot/Gdisk-Installer/gdiskboot.sh && clear && sudo bash /tmp/.gdiskboot.sh && sudo rm -f /tmp/.gdiskboot.sh
+    finalize "$PARENT" "$part"
+}
+
 finalize() {
     local disk="$1" part="$2"
     sync
@@ -1146,6 +1153,7 @@ echo
 echo "  ${BOLD}1.${NC} ${MAGENTA}Create Gdisk${NC} ~ Make a new Gdisk Device"
 echo "  ${BOLD}2.${NC} ${MAGENTA}Update Gdisk${NC} ~ Update or Install on existing partition."
 echo "  ${BOLD}3.${NC} ${MAGENTA}Repair Gdisk${NC} ~ Fix MBR & UEFI Boot on existing Gdisk device."
+echo "  ${BOLD}4.${NC} ${MAGENTA}Setup .Gdisk${NC} ~ Prepares a Linux system inside a .gdisk virtual disk."
 echo
 read -rp "  > " CHOICE
 echo
@@ -1154,5 +1162,6 @@ case "$CHOICE" in
     1) op_create ;;
     2) op_update ;;
     3) op_repair ;;
+    3) op_setup ;;
     *) die "invalid choice: $CHOICE" ;;
 esac
