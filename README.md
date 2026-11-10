@@ -1,6 +1,6 @@
 ## Gdisk -  Grub2  Device  Image  System  Kit
 
-<img width="853" height="357" alt="banner-top" src="https://github.com/user-attachments/assets/b588133a-b147-4cf6-993b-5b2cefd8cfee" />
+<img width="853" height="284" alt="banner-top" src="https://github.com/user-attachments/assets/abec78e9-5b0e-42d8-9a23-2e92b71e59e4" />
 
 ---
 
