@@ -212,8 +212,6 @@ hybrid BIOS + UEFI El Torito image recognised by Rufus):
 sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 ```
 
-![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
-
 ## Layout
 
 ```
@@ -265,9 +263,8 @@ Gdisk/
 
 ## Related
 
-- **grub2-patch** - the patched GrubFM-derived modules that enable raw UEFI
-  loopback booting: https://github.com/GlitchLinux/grub2-patch
+![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
 
----
+Glitch::blog - https://glitchlinux.com/blog/post.php?slug=gdisk-grub2-device-image-system-kit
 
-Source: https://github.com/GlitchLinux  ·  GPLv3
+Source: https://github.com/GlitchLinux  ·  GPLv3 
