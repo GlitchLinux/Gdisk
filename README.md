@@ -43,57 +43,6 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
 
 ---
 
-## Layout
-
-```
-Gdisk/
-├── boot/
-│   ├── grub/                           GRUB2 core: modules, theme, images, and all menu logic
-│   │   ├── grub.cfg                    entry point - hands off to gdisk.cfg
-│   │   ├── gdisk.cfg                   main menu (v3.2)
-│   │   ├── gdisk-partitions.cfg        "Browse Partitions" partition list
-│   │   ├── gdisk-browse.cfg            directory browser
-│   │   ├── gdisk-boot.cfg              dynamic loader for .iso .img .wim .vhd .vhdx .vtoy
-│   │   ├── iso-preboot.cfg             ISO pre-boot menu (loopback + OS detection)
-│   │   ├── img-preboot.cfg             IMG pre-boot menu (loopback + analysis)
-│   │   ├── wim-preboot.cfg             WIM pre-boot menu
-│   │   ├── vhd-preboot.cfg             VHD/VHDX pre-boot menu (ntloader, ntboot, raw maps)
-│   │   ├── iso-scan.cfg                speed-optimised ISO scanner
-│   │   ├── vhd-scan.cfg                .vhd/.vhdx auto-scan across all partitions
-│   │   ├── wimdiskchain.cfg            dynamic WIM boot scanner (all partitions)
-│   │   ├── wimboot-scan.cfg            wimboot payload with dynamic .wim discovery
-│   │   ├── winpe-native.cfg            native Windows Boot Manager / WinPE loader
-│   │   ├── winpe-iso.cfg               WinPE ISO boot menu
-│   │   ├── vdiskchain.cfg              .vtoy disk-image auto-scan and chainload
-│   │   ├── glitch-live.cfg             Glitch Linux live boot
-│   │   ├── linux-live.cfg              Linux live system boot entries
-│   │   ├── grub-ipxe.cfg               Glitch iPXE multi-net-boot (UEFI / BIOS)
-│   │   ├── system.cfg                  System menu
-│   │   ├── release.cfg                 disclaimer / banner screen
-│   │   ├── iso-boot.cfg  iso-menu.cfg  legacy v2.0 ISO menus (not linked from main menu)
-│   │   ├── boot-local-efi.cfg          boot local EFI loader from 1st drive (unlinked helper)
-│   │   ├── i386-pc/                    BIOS modules + patched core-patched.img / boot.img
-│   │   ├── x86_64-efi/                 UEFI modules
-│   │   ├── ntloader/                   ntloader v3.0.7 + initrd.cpio (NT6+ VHD/VHDX/WIM)
-│   │   ├── agFM/  theme/  images/  fonts/  locale/  wimboot/  vdiskchain/   supporting assets
-│   │   └── efi.img  font.pf2  grubenv
-│   ├── Gdisk-Installer/                CLI, Windows and GUI installers (+ payload helpers)
-│   ├── Gdisk-Mkiso/                    ISO-build scripts (gdisk-mkiso.sh + custom variants)
-│   └── Gdisk-Scripts/                  QEMU launchers, grub4dos generator, WIM converters, download helpers
-├── EFI/
-│   ├── BOOT/BOOTX64.EFI                patched grubfm UEFI boot binary
-│   ├── grubfm/                         agFM loader (grubfmx64.efi)
-│   ├── refind/                         rEFInd boot manager
-│   └── iPXE/                           iPXE network-boot binary (Glitch-iPXE.efi)
-├── Gdisk/                              drop folder for bootable files (.iso .img .vtoy .wim .vhd .vhdx .ima)
-├── Qemu-Boot.sh                        boot this device in QEMU (BIOS or UEFI)
-├── autorun.inf
-├── Gdisk.ico
-└── README.md
-```
-
----
-
 ## Installing Gdisk
 
 There are four ways to install Gdisk onto a target USB drive or disk. The Linux GUI installer is the recommended starting point.
@@ -264,6 +213,55 @@ sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 ```
 
 ![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
+
+## Layout
+
+```
+Gdisk/
+├── boot/
+│   ├── grub/                           GRUB2 core: modules, theme, images, and all menu logic
+│   │   ├── grub.cfg                    entry point - hands off to gdisk.cfg
+│   │   ├── gdisk.cfg                   main menu (v3.2)
+│   │   ├── gdisk-partitions.cfg        "Browse Partitions" partition list
+│   │   ├── gdisk-browse.cfg            directory browser
+│   │   ├── gdisk-boot.cfg              dynamic loader for .iso .img .wim .vhd .vhdx .vtoy
+│   │   ├── iso-preboot.cfg             ISO pre-boot menu (loopback + OS detection)
+│   │   ├── img-preboot.cfg             IMG pre-boot menu (loopback + analysis)
+│   │   ├── wim-preboot.cfg             WIM pre-boot menu
+│   │   ├── vhd-preboot.cfg             VHD/VHDX pre-boot menu (ntloader, ntboot, raw maps)
+│   │   ├── iso-scan.cfg                speed-optimised ISO scanner
+│   │   ├── vhd-scan.cfg                .vhd/.vhdx auto-scan across all partitions
+│   │   ├── wimdiskchain.cfg            dynamic WIM boot scanner (all partitions)
+│   │   ├── wimboot-scan.cfg            wimboot payload with dynamic .wim discovery
+│   │   ├── winpe-native.cfg            native Windows Boot Manager / WinPE loader
+│   │   ├── winpe-iso.cfg               WinPE ISO boot menu
+│   │   ├── vdiskchain.cfg              .vtoy disk-image auto-scan and chainload
+│   │   ├── glitch-live.cfg             Glitch Linux live boot
+│   │   ├── linux-live.cfg              Linux live system boot entries
+│   │   ├── grub-ipxe.cfg               Glitch iPXE multi-net-boot (UEFI / BIOS)
+│   │   ├── system.cfg                  System menu
+│   │   ├── release.cfg                 disclaimer / banner screen
+│   │   ├── iso-boot.cfg  iso-menu.cfg  legacy v2.0 ISO menus (not linked from main menu)
+│   │   ├── boot-local-efi.cfg          boot local EFI loader from 1st drive (unlinked helper)
+│   │   ├── i386-pc/                    BIOS modules + patched core-patched.img / boot.img
+│   │   ├── x86_64-efi/                 UEFI modules
+│   │   ├── ntloader/                   ntloader v3.0.7 + initrd.cpio (NT6+ VHD/VHDX/WIM)
+│   │   ├── agFM/  theme/  images/  fonts/  locale/  wimboot/  vdiskchain/   supporting assets
+│   │   └── efi.img  font.pf2  grubenv
+│   ├── Gdisk-Installer/                CLI, Windows and GUI installers (+ payload helpers)
+│   ├── Gdisk-Mkiso/                    ISO-build scripts (gdisk-mkiso.sh + custom variants)
+│   └── Gdisk-Scripts/                  QEMU launchers, grub4dos generator, WIM converters, download helpers
+├── EFI/
+│   ├── BOOT/BOOTX64.EFI                patched grubfm UEFI boot binary
+│   ├── grubfm/                         agFM loader (grubfmx64.efi)
+│   ├── refind/                         rEFInd boot manager
+│   └── iPXE/                           iPXE network-boot binary (Glitch-iPXE.efi)
+├── Gdisk/                              drop folder for bootable files (.iso .img .vtoy .wim .vhd .vhdx .ima)
+├── Qemu-Boot.sh                        boot this device in QEMU (BIOS or UEFI)
+├── autorun.inf
+├── Gdisk.ico
+└── README.md
+```
 
 ## Related
 
