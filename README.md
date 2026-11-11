@@ -1,7 +1,5 @@
 ## Gdisk -  Grub2  Device  Image  System  Kit
 
-<img width="828" height="259" alt="refind-banner" src="https://github.com/user-attachments/assets/81eb8e99-22ad-4f7a-8405-035605d3fc89" />
-
 ![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
 ---
 
@@ -263,7 +261,7 @@ hybrid BIOS + UEFI El Torito image recognised by Rufus):
 ```bash
 sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 ```
-
+<img width="828" height="259" alt="refind-banner" src="https://github.com/user-attachments/assets/81eb8e99-22ad-4f7a-8405-035605d3fc89" />
 ```
 ╭────────────────────────────────────────────────╮
 │    .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP │
