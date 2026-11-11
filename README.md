@@ -120,14 +120,13 @@ Operations:
 
 | Image | Format | Description |
 |---|---|---|
-| [Gdisk-ISO-v3.2-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-iPXE.iso) | Bootable ISO | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
-| [Gdisk-v3-Installer-iPXE.img](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.0/gdisk-v3-installer-ipxe-efi.img) | EFI Partition Image | iPXE boots Debian minimal live, auto-launches `gdisk-v3.sh` |
+| [Gdisk-ISO-v3.2-Installer-iPXE.iso](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-Installer-iPXE.iso) | Bootable ISO | iPXE boots minimal buildroot linux and then auto-launches gdisk cli installer |
 
 For situations where you don't have a working Linux or Windows environment available, or you want to install Gdisk to the same disk you're booting from.
 
-iPXE images boot a minimal Debian live system entirely into RAM via network boot. Once booted, the Gdisk installer runs automatically. Because the OS is running from RAM, the target disk is completely free - you can install Gdisk to the very disk you booted from.
+iPXE images boot a minimal buildroot live system entirely into RAM via network boot. Once booted, the Gdisk installer runs automatically. Because the OS is running from RAM, the target disk is completely free - you can install Gdisk to the very disk you booted from.
 
-**Requirements:** Wired internet connection (Ethernet). The iPXE boot image must be flashed to a USB stick or disk first using any raw image writer (dd, Rufus, Etcher, etc).
+**Requirements:** Wired internet connection (Ethernet). The iPXE boot image must be flashed to a USB stick or disk first using any raw image writer (dd, Rufus, Etcher, etc) OR launch the .iso in a virtual machine with wifi so ethernet is virtualized. OR burn it to a cd/dvd and boot bare-metal.
 
 **iPXE install workflow:**
 
@@ -138,7 +137,7 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
    sudo dd if=Gdisk-ISO-v3.2-iPXE.iso of=/dev/sdX bs=4M status=progress
    ```
 4. Boot the target machine from the USB stick (BIOS or UEFI)
-5. The system network-boots a minimal Debian live environment into RAM
+5. The system network-boots a minimal buildroot live environment into RAM
 6. The Gdisk installer (`gdisk-v3.sh`) starts automatically
 7. Select your target disk - this can be the same USB stick you booted from, since the live system is running entirely from RAM
 8. The installer downloads and deploys Gdisk to the target
