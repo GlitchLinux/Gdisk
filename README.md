@@ -13,7 +13,7 @@ Custom GRUB modules extracted from GrubFM have been patched to allow raw `.iso` 
 `.img` loopback booting in **UEFI** mode, and the boot chain installs a patched a1ive
 `core.img` for hybrid **BIOS + UEFI** support from a single device.
 
-> **Latest release: [v3.2](https://github.com/GlitchLinux/Gdisk/releases/tag/Gdisk-v3.2)** - the whole utility has been updated and optimized, and a new portable **Linux GUI installer** is available.
+> **Latest release: [v3.2](https://github.com/GlitchLinux/Gdisk/releases/tag/Gdisk-v3.2)** - the whole utility has been updated and optimized, and a new portable **Linux & windows installers** is available.
 
 ---
 
