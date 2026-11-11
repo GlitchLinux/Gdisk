@@ -271,7 +271,7 @@ sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 │ dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP"AMF    │ 
 │ VMMMP"   dMMMMP"   dMP    VMMMP"   dMP dMP     │
 ╭────────────────────────────────────────────────╮
-│  Grub2   Device   Image   System   Kit  -  v3  │
+│  Grub2   Device   Image   System   Kit   v3.2  │
 ╰────────────────────────────────────────────────╯
 ```
 
