@@ -264,6 +264,37 @@ Gdisk/
 └── README.md
 ```
 
+## Release Downloads - v3.2
+
+| File | Use it for | Size |
+|------|-----------|------|
+| [`gdisk-v3.2-gui-linux`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-gui-linux) | **Recommended.** Graphical installer, portable binary | 40.2 MB |
+| [`gdisk-v3.2-cli-linux`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-cli-linux) | Command-line installer, portable binary | 0.1 MB |
+| [`gdisk-v3.2-installer.sh`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-installer.sh) | Command-line installer (bash script) | 44.6 KB |
+| [`gdisk-v3-installer.exe`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3-installer.exe) | Windows portable GUI installer (v3.0, FAT32 only) | 11.4 MB |
+| [`Gdisk-ISO-v3.2.iso`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2.iso) | Full bootable image with complete Gdisk repo | 177.7 MB |
+| [`Gdisk-ISO-v3.2-installer.iso`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-installer.iso) | Minimal Buildroot Linux Gdisk installer | 43.7 MB |
+| [`Gdisk-ISO-v3.2-iPXE.iso`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-iPXE.iso) | iPXE network-boot to full Gdisk ISO | 3.0 MB |
+| [`Gdisk-ISO-v3.2-Installer-iPXE.iso`](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/Gdisk-ISO-v3.2-Installer-iPXE.iso) | iPXE network-boot to minimal Buildroot Gdisk installer | 3.0 MB |
+
+<details>
+<summary>Checksums (SHA-256)</summary>
+
+```
+94eb081b5e9a0b5ec647e5d71ad342d1c2d4930488ed93bbf75c627b091e2da9  gdisk-v3.2-gui-linux
+4bf402e0f991d1f831e0dd2225a4b1af1635b9e7cb21eac3f3a8174508ca1712  gdisk-v3.2-cli-linux
+3959f5f6dfca11c40940d463e9dded2df6009ac844eb2100e6b7285c06ce7cb3  gdisk-v3.2-installer.sh
+59f16167b993e3d9f4b43802586cc3984b3e252780c0eabecdc87f0b8d2c93ae  gdisk-v3-installer.exe
+9a8f699083225aa25d6a48779aa2856634622852ad226bf76fe0dd2b8805088f  Gdisk-ISO-v3.2.iso
+c56359f4d4419e9d0c05793b19c5feb2aefc4fde52e62344e9564de5d72e6a87  Gdisk-ISO-v3.2-installer.iso
+0e3d5c71a035746c347293f60f2f1e3a1af2cc74ea8d816884d17ec48a004a19  Gdisk-ISO-v3.2-iPXE.iso
+c6af1e58d3cf3546d1a1843c9b5c632a0b934faa2b80ffb3737e307f53807051  Gdisk-ISO-v3.2-Installer-iPXE.iso
+```
+
+</details>
+
+---
+
 ## Related
 
 ![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
