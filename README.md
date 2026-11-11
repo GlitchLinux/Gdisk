@@ -72,7 +72,7 @@ Root is required because the installer partitions, formats and writes boot code 
 
 | Image | Format | Description |
 |---|---|---|
-| [gdisk-v3-installer.sh](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3-installer.sh) | Linux Bash Script | Interactive CLI Installer |
+| [gdisk-v3.2-installer.sh](https://github.com/GlitchLinux/Gdisk/releases/download/Gdisk-v3.2/gdisk-v3.2-installer.sh) | Linux Bash Script | Interactive CLI Installer |
 
 An interactive CLI installer that runs on any Linux system with GRUB2 tools available. Downloads the latest Gdisk files from GitHub and deploys them to the target device. Must be run as root:
 
