@@ -316,10 +316,8 @@ c6af1e58d3cf3546d1a1843c9b5c632a0b934faa2b80ffb3737e307f53807051  Gdisk-ISO-v3.2
 
 ---
 
-## Related
-
 ![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
 
-Glitch::blog - https://glitchlinux.com/blog/post.php?slug=gdisk-grub2-device-image-system-kit
+---
 
-Source: https://github.com/GlitchLinux  ·  GPLv3 
+Source: https://github.com/GlitchLinux · Glitch::blog https://glitchlinux.com/blog · GPLv3
