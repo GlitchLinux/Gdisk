@@ -265,19 +265,6 @@ sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
 
 ![Gdisk Banner](https://github.com/user-attachments/assets/014a9470-a477-4c9e-b66e-2482cd2bb0e8)
 
-
-```bash
-╭────────────────────────────────────────────────╮
-│    .aMMMMP   dMMMMb    dMP   .dMMMb    dMP dMP │
-│   dMP"      dMP VMP   amr   dMP" VP   dMP dMP  │
-│  dMP MMP"  dMP dMP   dMP    VMMMb    dMMMM"    │   
-│ dMP.dMP   dMP.aMP   dMP   dP .dMP   dMP"AMF    │ 
-│ VMMMP"   dMMMMP"   dMP    VMMMP"   dMP dMP     │
-╭────────────────────────────────────────────────╮
-│  Grub2   Device   Image   System   Kit   v3.2  │
-╰────────────────────────────────────────────────╯
-```
-
 ## Related
 
 - **grub2-patch** - the patched GrubFM-derived modules that enable raw UEFI
