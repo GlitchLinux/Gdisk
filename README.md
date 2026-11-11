@@ -233,7 +233,7 @@ The standalone `qemu-bios.sh` and `qemu-uefi.sh` scripts remain in `boot/Gdisk-S
 hybrid BIOS + UEFI El Torito image recognised by Rufus):
 
 ```bash
-sudo bash boot/Gdisk-Mkiso/gdisk-mkiso.sh
+sudo bash boot/Gdisk-Mkiso/mkiso-auto-custom.sh
 ```
 
 ## Layout
