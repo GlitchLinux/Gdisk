@@ -141,7 +141,6 @@ iPXE images boot a minimal Debian live system entirely into RAM via network boot
 
 ---
 
-
 ## Booting
 
 Boot the target device in either BIOS/CSM or UEFI mode. The primary menu opens on
