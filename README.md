@@ -151,6 +151,28 @@ Boot the target device in either BIOS/CSM or UEFI mode. The primary menu opens o
 routes each `.iso`, `.img`, `.wim`, `.vhd`, `.vhdx` or `.vtoy` to the appropriate
 pre-boot handler.
 
+### Supported boot formats
+
+Gdisk can directly boot the following file types from any attached partition:
+
+| Format | Description |
+|---|---|
+| `.iso` | CD/DVD images - Linux, Windows, utilities |
+| `.img` | Raw disk images |
+| `.wim` | Windows Imaging Format / WinPE |
+| `.vhd` / `.vhdx` | Virtual hard disks (Windows native boot) |
+| `.vtoy` | Ventoy-compatible disk images (vDiskChain) |
+| `.efi` | UEFI executables and shell applications |
+
+### Bundled bootloaders
+
+Gdisk ships with custom versions of several well-known bootloaders and network-boot tools, all accessible from the main menu:
+
+- **agFM** (a1ive GrubFM) - file manager and boot helper with patched GRUB2 modules for raw ISO/IMG loopback in UEFI
+- **rEFInd** - graphical UEFI boot manager for multi-OS setups
+- **Ventoy** - vDiskChain support for `.vtoy` disk images
+- **netboot.xyz** - iPXE-based network boot framework for installing or booting dozens of operating systems over the network
+
 ### VHD / VHDX boot
 
 Drop `.vhd` or `.vhdx` files into the root, `/VHD/` or `/Gdisk/` of any attached
