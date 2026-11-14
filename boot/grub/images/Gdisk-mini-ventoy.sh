@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo rm -f /tmp/.mini-ventoy
+sudo rm -f /tmp/.mini-ventoy Gdisk-3.2-Ventoy.img
 
 cat > /tmp/.mini-ventoy << 'EOF'
 #!/bin/bash
