@@ -1,17 +1,20 @@
 #!/bin/bash
-# ╔════════════════════════════════════════════════════════════════╗
-# ║ encrypted-partition-setup.sh                                     ║
-# ║ Wipe a pre-existing partition, LUKS-encrypt it, and register its ║
-# ║ UUID in the gdisk-crypto.cfg of the Gdisk device this is run from ║
-# ╚════════════════════════════════════════════════════════════════╝
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║ encrypted-partition-setup.sh                                       ║
+# ║ Wipe a pre-existing partition, LUKS-encrypt it, and register its   ║
+# ║ UUID in the gdisk-crypto.cfg of the Gdisk device this is run from  ║
+# ╚════════════════════════════════════════════════════════════════════╝
 #
 # GRUB in Gdisk has NO argon2 module, so this uses LUKS1 (PBKDF2), which
 # GRUB's cryptomount can always open. Do not switch to default LUKS2.
 #
 # Run as root from the Gdisk device, e.g.:
-#   sudo /boot/Gdisk-Installer/encrypted-partition-setup.sh
+#   sudo /boot/Gdisk-Installer/gdisk-luks-setup.sh
 
 set -eu
+
+rm -f ../grub/gdisk-crypto.cfg
+touch ../grub/gdisk-crypto.cfg
 
 MAPNAME="gdisk_luks_setup"
 FSLABEL="Gdisk-Luks"
@@ -116,16 +119,13 @@ UUID_ND="$(cryptsetup luksUUID "$TARGET" | tr -d -)"
 [ -n "$UUID_ND" ] || die "could not read LUKS UUID back from $TARGET."
 info "LUKS UUID (dash-stripped): $UUID_ND"
 
-cp -f "$CRYPTO_CFG" "${CRYPTO_CFG}.bak"
-info "Backed up old config to ${CRYPTO_CFG}.bak"
-
 # regenerate the config (placeholder filled after the heredoc)
 cat > "$CRYPTO_CFG" <<'GRUBCFG'
 # ╔══════════════════════════════════════════════════╗
-# ║ gdisk-crypto.cfg - unlock a LUKS volume by UUID,   ║
-# ║ then list its files in the native Gdisk browser    ║
+# ║ gdisk-crypto.cfg - unlock a LUKS volume by UUID, ║
+# ║ then list its files in the native Gdisk browser  ║
 # ╚══════════════════════════════════════════════════╝
-# UUID below is written by encrypted-partition-setup.sh (dashes stripped,
+# UUID below is written by gdisk-luks-setup.sh (dashes stripped,
 # which is what this GRUB build matches). Container is LUKS1 (PBKDF2) -
 # GRUB here has no argon2 module.
 
@@ -144,9 +144,15 @@ insmod loopback
 insmod regexp
 insmod probe
 
-# >>> managed by encrypted-partition-setup.sh - do not edit this line <<<
+# >>> managed by gdisk-luks-setup.sh - do not edit this line <<<
 set crypto_uuid="__UUID_ND__"
 # <<< end managed >>>
+
+echo " "
+echo " "
+echo " "
+echo " "
+echo " "
 
 if cryptomount -u "${crypto_uuid}"; then
     set gdisk_browse_dev="crypto0"
