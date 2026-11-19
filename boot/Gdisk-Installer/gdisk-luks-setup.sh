@@ -143,6 +143,13 @@ insmod iso9660
 insmod loopback
 insmod regexp
 insmod probe
+insmod png
+
+set timeout=15
+set default=0
+set theme=/boot/grub/theme/theme-luks.cfg
+set color_normal=white/black
+set color_highlight=white/black
 
 # >>> managed by gdisk-luks-setup.sh - do not edit this line <<<
 set crypto_uuid="__UUID_ND__"
