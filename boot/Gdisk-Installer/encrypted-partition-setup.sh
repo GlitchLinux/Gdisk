@@ -13,7 +13,8 @@
 
 set -eu
 
-MAPNAME="gdisk_enc_setup"
+MAPNAME="gdisk_luks_setup"
+FSLABEL="Gdisk-Luks"
 RED=$'\e[31m'; GRN=$'\e[32m'; YEL=$'\e[33m'; CYA=$'\e[36m'; RST=$'\e[0m'
 info(){ echo "${CYA}==>${RST} $*"; }
 ok(){   echo "${GRN}OK:${RST} $*"; }
@@ -98,10 +99,10 @@ echo "  4) ntfs"
 echo "  5) none    (leave raw - not browsable until you format it)"
 read -rp "Choice [1]: " FSC; FSC="${FSC:-1}"
 case "$FSC" in
-    1) mkfs.vfat -F32 -n GDISK-ENC "/dev/mapper/$MAPNAME" >/dev/null && ok "FAT32 created." ;;
-    2) mkfs.ext4 -q -L GDISK-ENC "/dev/mapper/$MAPNAME"   && ok "ext4 created." ;;
-    3) mkfs.exfat -n GDISK-ENC "/dev/mapper/$MAPNAME"     >/dev/null && ok "exfat created." ;;
-    4) mkfs.ntfs -f -L GDISK-ENC "/dev/mapper/$MAPNAME"   >/dev/null && ok "ntfs created." ;;
+    1) mkfs.vfat -F32 -n "$FSLABEL" "/dev/mapper/$MAPNAME" >/dev/null && ok "FAT32 created." ;;
+    2) mkfs.ext4 -q -L "$FSLABEL" "/dev/mapper/$MAPNAME"   && ok "ext4 created." ;;
+    3) mkfs.exfat -n "$FSLABEL" "/dev/mapper/$MAPNAME"     >/dev/null && ok "exfat created." ;;
+    4) mkfs.ntfs -f -L "$FSLABEL" "/dev/mapper/$MAPNAME"   >/dev/null && ok "ntfs created." ;;
     5) warn "No filesystem created." ;;
     *) warn "Unknown choice - no filesystem created." ;;
 esac
@@ -110,22 +111,23 @@ cryptsetup close "$MAPNAME"
 unset PP
 
 # --- register UUID in gdisk-crypto.cfg -------------------------------------
-UUID="$(cryptsetup luksUUID "$TARGET")"
-UUID_ND="${UUID//-/}"
-[ -n "$UUID" ] || die "could not read LUKS UUID back from $TARGET."
-info "LUKS UUID: $UUID"
+# GRUB on this build matches the dash-STRIPPED LUKS UUID, so store that form.
+UUID_ND="$(cryptsetup luksUUID "$TARGET" | tr -d -)"
+[ -n "$UUID_ND" ] || die "could not read LUKS UUID back from $TARGET."
+info "LUKS UUID (dash-stripped): $UUID_ND"
 
 cp -f "$CRYPTO_CFG" "${CRYPTO_CFG}.bak"
 info "Backed up old config to ${CRYPTO_CFG}.bak"
 
-# regenerate the config (placeholders filled after the heredoc)
+# regenerate the config (placeholder filled after the heredoc)
 cat > "$CRYPTO_CFG" <<'GRUBCFG'
 # ╔══════════════════════════════════════════════════╗
 # ║ gdisk-crypto.cfg - unlock a LUKS volume by UUID,   ║
 # ║ then list its files in the native Gdisk browser    ║
 # ╚══════════════════════════════════════════════════╝
-# UUID lines below are written by encrypted-partition-setup.sh.
-# Container is LUKS1 (PBKDF2) - GRUB here has no argon2 module.
+# UUID below is written by encrypted-partition-setup.sh (dashes stripped,
+# which is what this GRUB build matches). Container is LUKS1 (PBKDF2) -
+# GRUB here has no argon2 module.
 
 insmod part_msdos
 insmod part_gpt
@@ -142,25 +144,11 @@ insmod loopback
 insmod regexp
 insmod probe
 
-# >>> managed by encrypted-partition-setup.sh - do not edit these two lines <<<
-set crypto_uuid="__UUID__"
-set crypto_uuid_nd="__UUID_ND__"
+# >>> managed by encrypted-partition-setup.sh - do not edit this line <<<
+set crypto_uuid="__UUID_ND__"
 # <<< end managed >>>
 
-# This GRUB build matches the dash-STRIPPED LUKS UUID, so try that first;
-# the dashed form is kept only as a fallback for other GRUB builds. A
-# non-matching form fails instantly with no passphrase prompt.
-set unlocked=0
-if cryptomount -u "${crypto_uuid_nd}"; then
-    set unlocked=1
-fi
-if [ "${unlocked}" = "0" ]; then
-    if cryptomount -u "${crypto_uuid}"; then
-        set unlocked=1
-    fi
-fi
-
-if [ "${unlocked}" = "1" ]; then
+if cryptomount -u "${crypto_uuid}"; then
     set gdisk_browse_dev="crypto0"
     set gdisk_browse_path=""
     export gdisk_browse_dev
@@ -175,10 +163,10 @@ else
 fi
 GRUBCFG
 
-sed -i "s/__UUID__/$UUID/; s/__UUID_ND__/$UUID_ND/" "$CRYPTO_CFG"
+sed -i "s/__UUID_ND__/$UUID_ND/" "$CRYPTO_CFG"
 sync
 
 echo
-ok "Done. $TARGET is encrypted and registered."
+ok "Done. $TARGET is encrypted (label: $FSLABEL) and registered."
 echo "   In Gdisk: 'Gdisk Decrypt LUKS' unlocks and lists it; afterwards it also"
 echo "   appears under 'Gdisk Browse Partitions' as a (crypto0) *LUKS* entry."
