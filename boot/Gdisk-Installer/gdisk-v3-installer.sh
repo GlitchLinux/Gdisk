@@ -1139,7 +1139,7 @@ finalize() {
 op_gdiskboot() {
     header ".Gdisk Boot Setup"
 
-    local GDISKBOOT_VERSION="0.3"
+    local GDISKBOOT_VERSION="0.4"
 
     # ── Detect initramfs system ────────────────────────────────
     local INITRAMFS_TOOL
@@ -1194,6 +1194,8 @@ GDISK_DEV=$(gdisk_cmdline_val "gdisk.dev")
 GDISK_FILE=$(gdisk_cmdline_val "gdisk.file")
 GDISK_ROOT=$(gdisk_cmdline_val "gdisk.root")
 GDISK_METHOD=$(gdisk_cmdline_val "gdisk.method")
+GDISK_LUKS=$(gdisk_cmdline_val "gdisk.luks")
+GDISK_LUKSUUID=$(gdisk_cmdline_val "gdisk.luksuuid")
 
 [ -z "${GDISK_DEV}" ] || [ -z "${GDISK_FILE}" ] && exit 0
 [ -z "${GDISK_ROOT}" ] && GDISK_ROOT=1
@@ -1216,7 +1218,11 @@ done
 gdisk_log "Waiting for host device: ${GDISK_DEV}"
 HOST_BLKDEV=""
 WAIT=0
-while [ ${WAIT} -lt 60 ]; do
+# An encrypted host cannot expose its inner UUID until we unlock the
+# container below, so don't burn the full 30s waiting for it to appear.
+WAIT_MAX=60
+[ "${GDISK_LUKS}" = "1" ] && WAIT_MAX=6
+while [ ${WAIT} -lt ${WAIT_MAX} ]; do
     case "${GDISK_DEV}" in
         UUID=*|LABEL=*|PARTUUID=*) HOST_BLKDEV=$(blkid -t "${GDISK_DEV}" -o device 2>/dev/null | head -1) ;;
         /dev/*) [ -b "${GDISK_DEV}" ] && HOST_BLKDEV="${GDISK_DEV}" ;;
@@ -1224,6 +1230,84 @@ while [ ${WAIT} -lt 60 ]; do
     [ -n "${HOST_BLKDEV}" ] && [ -b "${HOST_BLKDEV}" ] && break
     sleep 0.5; WAIT=$((WAIT + 1))
 done
+
+# ── LUKS-encrypted host support ──────────────────────────────
+# If the .gdisk lives on a LUKS volume (flagged by gdisk.luks=1 from
+# GRUB, which already unlocked it to load the kernel), the inner
+# filesystem is invisible here until we open the container ourselves.
+# Unlock it, then the decrypted volume exposes the UUID the wait loop
+# above was looking for. Needs cryptsetup + dm-crypt in the initramfs.
+if [ -z "${HOST_BLKDEV}" ] && [ "${GDISK_LUKS}" = "1" ]; then
+    if command -v cryptsetup >/dev/null 2>&1; then
+        gdisk_log "Host is LUKS-encrypted - unlocking container"
+        modprobe -q dm-crypt 2>/dev/null || modprobe -q dm_crypt 2>/dev/null || true
+        for cm in aes xts sha256 sha512 aes_generic libaes; do
+            modprobe -q "${cm}" 2>/dev/null || true
+        done
+
+        # Enumerate LUKS containers (util-linux blkid -t, with a
+        # portable fallback for busybox blkid).
+        LUKS_DEVS=$(blkid -t TYPE=crypto_LUKS -o device 2>/dev/null)
+        if [ -z "${LUKS_DEVS}" ]; then
+            LUKS_DEVS=$(for d in $(blkid -o device 2>/dev/null); do
+                [ "$(blkid -s TYPE -o value "${d}" 2>/dev/null)" = "crypto_LUKS" ] && echo "${d}"
+            done)
+        fi
+
+        # If GRUB passed the container UUID, try that one first
+        # (dash- and case-insensitive compare).
+        WANT_UUID=$(echo "${GDISK_LUKSUUID}" | tr -d - | tr 'A-F' 'a-f')
+        LUKS_CANDS=""
+        for dev in ${LUKS_DEVS}; do
+            if [ -n "${WANT_UUID}" ]; then
+                HAVE_UUID=$(cryptsetup luksUUID "${dev}" 2>/dev/null | tr -d - | tr 'A-F' 'a-f')
+                if [ "${HAVE_UUID}" = "${WANT_UUID}" ]; then
+                    LUKS_CANDS="${dev} ${LUKS_CANDS}"
+                    continue
+                fi
+            fi
+            LUKS_CANDS="${LUKS_CANDS} ${dev}"
+        done
+
+        GDISK_LUKS_MAP="gdiskhost"
+        for cand in ${LUKS_CANDS}; do
+            [ -b "${cand}" ] || continue
+            gdisk_log "Trying LUKS container: ${cand}"
+            TRIES=0
+            while [ ${TRIES} -lt 3 ]; do
+                echo ""                                                       > /dev/console 2>/dev/null || true
+                echo "  Gdisk: unlock encrypted host ${cand} to boot ${GDISK_FILE}" > /dev/console 2>/dev/null || true
+                if cryptsetup open "${cand}" "${GDISK_LUKS_MAP}" < /dev/console > /dev/console 2>&1; then
+                    gdisk_log "LUKS opened: ${cand} -> /dev/mapper/${GDISK_LUKS_MAP}"
+                    break
+                fi
+                TRIES=$((TRIES + 1))
+            done
+            if [ -b "/dev/mapper/${GDISK_LUKS_MAP}" ]; then
+                command -v udevadm >/dev/null 2>&1 && udevadm settle --timeout=10 2>/dev/null
+                sleep 1
+                case "${GDISK_DEV}" in
+                    UUID=*|LABEL=*|PARTUUID=*)
+                        HOST_BLKDEV=$(blkid -t "${GDISK_DEV}" -o device 2>/dev/null | head -1) ;;
+                esac
+                # Inner UUID unreadable from GRUB (gdisk.dev was a
+                # placeholder): use the decrypted mapper directly.
+                [ -z "${HOST_BLKDEV}" ] && [ -b "/dev/mapper/${GDISK_LUKS_MAP}" ] && \
+                    HOST_BLKDEV="/dev/mapper/${GDISK_LUKS_MAP}"
+                if [ -b "${HOST_BLKDEV}" ]; then
+                    # dm-crypt extents are not physically contiguous on
+                    # the parent disk, so FIEMAP mapping is invalid here;
+                    # force the loop method.
+                    GDISK_METHOD="loop"
+                    break
+                fi
+                cryptsetup close "${GDISK_LUKS_MAP}" 2>/dev/null || true
+            fi
+        done
+    else
+        gdisk_log "ERROR: host is LUKS-encrypted but cryptsetup is missing from the initramfs"
+    fi
+fi
 
 [ -z "${HOST_BLKDEV}" ] && { gdisk_log "ERROR: ${GDISK_DEV} not found"; exit 1; }
 gdisk_log "Host device: ${HOST_BLKDEV}"
@@ -1400,7 +1484,7 @@ check() { require_binaries dmsetup blkid awk sed grep || return 1; return 255; }
 depends() { echo dm; return 0; }
 install() {
     inst_multiple dmsetup blkid awk sed grep dd stat losetup ln sleep cat mkdir mount umount modprobe
-    for t in kpartx filefrag sfdisk partprobe blockdev; do
+    for t in kpartx filefrag sfdisk partprobe blockdev cryptsetup; do
         command -v "$t" >/dev/null 2>&1 && inst_multiple "$t"
     done
     inst_hook initqueue/settled 90 "$moddir/gdisk-settled.sh"
@@ -1412,7 +1496,7 @@ DSETUP
         _gdiskboot_generate_hook > "${MODDIR}/gdisk-settled.sh"; chmod +x "${MODDIR}/gdisk-settled.sh"
         _gdiskboot_udev_rules "${MODDIR}/gdisk-udev.rules"
         echo 'add_dracutmodules+=" gdisk "
-force_drivers+=" dm-mod loop "' > /etc/dracut.conf.d/gdisk.conf
+force_drivers+=" dm-mod loop dm-crypt aes xts sha256 "' > /etc/dracut.conf.d/gdisk.conf
         msg "Dracut module installed"
     }
 
@@ -1428,10 +1512,11 @@ case $1 in prereqs) prereqs; exit 0 ;; esac
 for tool in dmsetup blkid awk sed grep dd stat losetup ln sleep cat mkdir mount umount modprobe; do
     for p in /bin /sbin /usr/bin /usr/sbin; do [ -f "$p/$tool" ] && copy_exec "$p/$tool" /sbin && break; done
 done
-for tool in kpartx filefrag sfdisk partprobe blockdev; do
+for tool in kpartx filefrag sfdisk partprobe blockdev cryptsetup; do
     for p in /bin /sbin /usr/bin /usr/sbin; do [ -f "$p/$tool" ] && copy_exec "$p/$tool" /sbin && break; done
 done
 force_load dm-mod; force_load loop
+force_load dm-crypt; force_load aes; force_load xts; force_load sha256
 [ -f /etc/udev/rules.d/99-gdisk.rules ] && mkdir -p "$DESTDIR/etc/udev/rules.d" && cp /etc/udev/rules.d/99-gdisk.rules "$DESTDIR/etc/udev/rules.d/"
 ITHOOK
         chmod +x /usr/share/initramfs-tools/hooks/gdisk
@@ -1448,8 +1533,8 @@ ITHOOK
 #!/bin/bash
 build() {
     for b in dmsetup blkid awk sed grep dd stat losetup ln sleep cat mkdir mount umount modprobe; do add_binary "$b"; done
-    for t in kpartx filefrag sfdisk partprobe blockdev; do command -v "$t" >/dev/null 2>&1 && add_binary "$t"; done
-    add_module dm-mod; add_module loop; add_file /etc/udev/rules.d/99-gdisk.rules; add_runscript
+    for t in kpartx filefrag sfdisk partprobe blockdev cryptsetup; do command -v "$t" >/dev/null 2>&1 && add_binary "$t"; done
+    add_module dm-mod; add_module loop; add_module dm-crypt; add_file /etc/udev/rules.d/99-gdisk.rules; add_runscript
 }
 help() { echo "Gdisk virtual disk boot support."; }
 MKINSTALL
