@@ -147,15 +147,15 @@ set crypto_uuid="__UUID__"
 set crypto_uuid_nd="__UUID_ND__"
 # <<< end managed >>>
 
-# cryptomount -u scans every disk for a LUKS header with this UUID. GRUB builds
-# differ on whether the stored UUID keeps its dashes, so we try the dashed form
-# then the stripped form; the non-matching one fails instantly with no prompt.
+# This GRUB build matches the dash-STRIPPED LUKS UUID, so try that first;
+# the dashed form is kept only as a fallback for other GRUB builds. A
+# non-matching form fails instantly with no passphrase prompt.
 set unlocked=0
-if cryptomount -u "${crypto_uuid}"; then
+if cryptomount -u "${crypto_uuid_nd}"; then
     set unlocked=1
 fi
 if [ "${unlocked}" = "0" ]; then
-    if cryptomount -u "${crypto_uuid_nd}"; then
+    if cryptomount -u "${crypto_uuid}"; then
         set unlocked=1
     fi
 fi
