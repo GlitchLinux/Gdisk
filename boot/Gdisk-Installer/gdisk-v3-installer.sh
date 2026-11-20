@@ -1139,7 +1139,7 @@ finalize() {
 op_gdiskboot() {
     header ".Gdisk Boot Setup"
 
-    local GDISKBOOT_VERSION="0.4"
+    local GDISKBOOT_VERSION="0.5"
 
     # ── Detect initramfs system ────────────────────────────────
     local INITRAMFS_TOOL
@@ -1273,16 +1273,31 @@ if [ -z "${HOST_BLKDEV}" ] && [ "${GDISK_LUKS}" = "1" ]; then
         for cand in ${LUKS_CANDS}; do
             [ -b "${cand}" ] || continue
             gdisk_log "Trying LUKS container: ${cand}"
-            TRIES=0
-            while [ ${TRIES} -lt 3 ]; do
-                echo ""                                                       > /dev/console 2>/dev/null || true
-                echo "  Gdisk: unlock encrypted host ${cand} to boot ${GDISK_FILE}" > /dev/console 2>/dev/null || true
-                if cryptsetup open "${cand}" "${GDISK_LUKS_MAP}" < /dev/console > /dev/console 2>&1; then
-                    gdisk_log "LUKS opened: ${cand} -> /dev/mapper/${GDISK_LUKS_MAP}"
-                    break
+
+            # 1) Keyfile first (no prompt). GRUB injects the volume's
+            #    own unlock key at /gdisk-host.key when it has one, so
+            #    the user is not asked for the passphrase a second time.
+            if [ ! -b "/dev/mapper/${GDISK_LUKS_MAP}" ] && [ -f /gdisk-host.key ]; then
+                if cryptsetup open --key-file /gdisk-host.key "${cand}" "${GDISK_LUKS_MAP}" >/dev/null 2>&1; then
+                    gdisk_log "LUKS opened via injected keyfile: ${cand}"
                 fi
-                TRIES=$((TRIES + 1))
-            done
+            fi
+
+            # 2) Fall back to an interactive passphrase prompt (volumes
+            #    with no embedded keyfile, or a key mismatch).
+            if [ ! -b "/dev/mapper/${GDISK_LUKS_MAP}" ]; then
+                TRIES=0
+                while [ ${TRIES} -lt 3 ]; do
+                    echo ""                                                       > /dev/console 2>/dev/null || true
+                    echo "  Gdisk: unlock encrypted host ${cand} to boot ${GDISK_FILE}" > /dev/console 2>/dev/null || true
+                    if cryptsetup open "${cand}" "${GDISK_LUKS_MAP}" < /dev/console > /dev/console 2>&1; then
+                        gdisk_log "LUKS opened: ${cand} -> /dev/mapper/${GDISK_LUKS_MAP}"
+                        break
+                    fi
+                    TRIES=$((TRIES + 1))
+                done
+            fi
+
             if [ -b "/dev/mapper/${GDISK_LUKS_MAP}" ]; then
                 command -v udevadm >/dev/null 2>&1 && udevadm settle --timeout=10 2>/dev/null
                 sleep 1

@@ -110,6 +110,36 @@ case "$FSC" in
     *) warn "Unknown choice - no filesystem created." ;;
 esac
 
+# --- detached keyfile for single-passphrase Gdisk boot ---------------------
+# A second keyslot unlocked by a random keyfile that is stored INSIDE this
+# encrypted volume (encrypted at rest). When Gdisk boots a .gdisk from this
+# volume it injects the keyfile into the guest initramfs, so the guest opens
+# the container without asking for the passphrase a second time. The volume
+# must have a filesystem for the key to be stored; "none" skips this.
+KEYMNT="/run/gdisk-luks-key-$$"
+KEYTMP="$(mktemp)"
+info "Adding Gdisk boot keyfile (second LUKS keyslot)..."
+dd if=/dev/urandom of="$KEYTMP" bs=512 count=8 status=none 2>/dev/null || \
+    dd if=/dev/urandom of="$KEYTMP" bs=512 count=8 2>/dev/null
+if printf '%s' "$PP" | cryptsetup luksAddKey "$TARGET" "$KEYTMP" -; then
+    ok "Keyfile keyslot added."
+    mkdir -p "$KEYMNT"
+    if mount "/dev/mapper/$MAPNAME" "$KEYMNT" 2>/dev/null; then
+        mkdir -p "$KEYMNT/gdisk-keys"
+        cp "$KEYTMP" "$KEYMNT/gdisk-keys/host.key"
+        chmod 400 "$KEYMNT/gdisk-keys/host.key" 2>/dev/null || true
+        sync
+        umount "$KEYMNT"
+        ok "Keyfile stored at /gdisk-keys/host.key inside the volume (single-prompt boot)."
+    else
+        warn "Could not mount the volume to store the keyfile - boot will prompt for the passphrase."
+    fi
+    rmdir "$KEYMNT" 2>/dev/null || true
+else
+    warn "luksAddKey failed - boot will prompt for the passphrase."
+fi
+shred -u "$KEYTMP" 2>/dev/null || rm -f "$KEYTMP"
+
 cryptsetup close "$MAPNAME"
 unset PP
 
