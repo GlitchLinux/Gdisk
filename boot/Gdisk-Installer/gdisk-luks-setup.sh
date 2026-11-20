@@ -111,11 +111,12 @@ case "$FSC" in
 esac
 
 # --- detached keyfile for single-passphrase Gdisk boot ---------------------
-# A second keyslot unlocked by a random keyfile that is stored INSIDE this
-# encrypted volume (encrypted at rest). When Gdisk boots a .gdisk from this
-# volume it injects the keyfile into the guest initramfs, so the guest opens
-# the container without asking for the passphrase a second time. The volume
-# must have a filesystem for the key to be stored; "none" skips this.
+# A second keyslot unlocked by a random keyfile stored INSIDE this encrypted
+# volume (encrypted at rest) as a hidden dotfile in the volume root, so it is
+# not visible when browsing the unlocked partition. When Gdisk boots a .gdisk
+# from this volume it injects the keyfile into the guest initramfs, so the
+# guest opens the container without asking for the passphrase a second time.
+# The volume must have a filesystem for the key to be stored; "none" skips it.
 KEYMNT="/run/gdisk-luks-key-$$"
 KEYTMP="$(mktemp)"
 info "Adding Gdisk boot keyfile (second LUKS keyslot)..."
@@ -125,12 +126,13 @@ if printf '%s' "$PP" | cryptsetup luksAddKey "$TARGET" "$KEYTMP" -; then
     ok "Keyfile keyslot added."
     mkdir -p "$KEYMNT"
     if mount "/dev/mapper/$MAPNAME" "$KEYMNT" 2>/dev/null; then
-        mkdir -p "$KEYMNT/gdisk-keys"
-        cp "$KEYTMP" "$KEYMNT/gdisk-keys/host.key"
-        chmod 400 "$KEYMNT/gdisk-keys/host.key" 2>/dev/null || true
+        cp "$KEYTMP" "$KEYMNT/.gdisk-host.key"
+        chmod 400 "$KEYMNT/.gdisk-host.key" 2>/dev/null || true
+        # dot already hides it on Linux; also set the FAT hidden bit if we can
+        command -v fatattr >/dev/null 2>&1 && fatattr +h "$KEYMNT/.gdisk-host.key" 2>/dev/null || true
         sync
         umount "$KEYMNT"
-        ok "Keyfile stored at /gdisk-keys/host.key inside the volume (single-prompt boot)."
+        ok "Keyfile stored at /.gdisk-host.key inside the volume (hidden; single-prompt boot)."
     else
         warn "Could not mount the volume to store the keyfile - boot will prompt for the passphrase."
     fi
