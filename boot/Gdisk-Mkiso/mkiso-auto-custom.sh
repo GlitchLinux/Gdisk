@@ -102,6 +102,7 @@ need xorriso mkfs.vfat rsync
 # ====================================================================
 
 sudo cp -f ../grub/efi.img /efi.img
+sudo cp -f ../grub/gdisk.cfg ../grub/grub.cfg
 
 GDISK_SRC="../.."
 
@@ -230,7 +231,7 @@ else
     die "ISO build failed - output file not found"
 fi
 
-sudo rm -rf $BUILD_DIR 
+sudo rm -rf $BUILD_DIR ../grub/grub.cfg
 
 sleep 3
 
