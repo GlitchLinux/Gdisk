@@ -42,7 +42,7 @@ VOL_LABEL="Gdisk-v3"                 # FAT label, max 11 chars
 ISO_OUTPUT="${1:-./Gdisk-v3.2-hybrid.iso}"
 VHD_FOOTER="${VHD_FOOTER:-1}"
 PART_START=2048                   # 1 MiB aligned, gap holds G-bootmgr core
-BUILD_DIR="/tmp/gdisk-mkiso-hybrid-$$"
+BUILD_DIR="/gdisk-mkiso-hybrid-$$"
 
 # -------------------- styling --------------------
 RED=$'\e[0;31m'; GRN=$'\e[0;32m'; YLW=$'\e[1;33m'
@@ -106,6 +106,7 @@ need() {
     done
 }
 need mkfs.vfat mcopy mmd mdir sfdisk base64 awk dd truncate
+cp -f "$GDISK_SRC/boot/grub/gdisk.cfg" "$GDISK_SRC/boot/grub/grub.cfg"
 
 # ====================================================================
 #  Step 1: Validate source (the Gdisk system this script lives in)
@@ -227,6 +228,8 @@ if [ "$VHD_FOOTER" = "1" ]; then
     cat "$F" >> "$OUT_TMP"
     msg "Fixed-VHD footer appended (copy/rename to .vhd to mount in Windows)"
 fi
+
+rm -f "$GDISK_SRC/boot/grub/grub.cfg"
 
 mv -f "$OUT_TMP" "$ISO_OUTPUT" || die "could not write $ISO_OUTPUT"
 
@@ -7654,3 +7657,4 @@ aLzk+dolmcL9yaBxU8X724Pvg0nYmPUQv1qfSYXkklierOC0LlF/MZ3PrbGeJTwBcQjkR+PPGVPG
 9k3O7ZbGS857VOAfCPv5+hBMu8HfJoAHd6/Y4iL7IajGWKznAguIZHDombnAuJ7xbmZPXPgpLt86
 Vh8jaf4GLYr7Se/dyr2CNuX8hI4D/8FPFWDA6+f/jeO9JqAAj9VPBcB1KGk=
 __END__
+
